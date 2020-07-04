@@ -245,14 +245,12 @@ public class ShootingEnemy : MonoBehaviour
                 pingPongWalk.enabled = true; 
                 feetAnimator?.StartWaving();
                 sfx.TryStartPlayLooped("Walk");
-                Debug.Log("startd playing walk");
                 break;
 
             case States.Shooting:
                 feetAnimator?.StopWaving(); 
                 justSpottedTarget = true;
                 sfx.TryStopPlayLooped("Walk");
-                Debug.Log("stopped playing walk");
                 break;
 
             default:

@@ -348,7 +348,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6062514050793964110}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.56, z: 0}
+  m_LocalPosition: {x: 0.142, y: -0.56, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6062514050960311440}
@@ -521,12 +521,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030aafdeec1be0147896bea5b524ee32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  raycastBeginTr: {fileID: 6062514051188229714}
+  raycastBeginTr: {fileID: 6062514052456090729}
   target: {fileID: 0}
   sightDist: 9
   sightLayerMask:
     serializedVersion: 2
-    m_Bits: 22784
+    m_Bits: 18688
   armRotationPivot: {fileID: 6062514051829522253}
   bulletSpawnTr: {fileID: 6062514052456090729}
   bullet: {fileID: 376519349994461293, guid: 17ae15391e6a35c42bf1fe72cd23a7fc, type: 3}

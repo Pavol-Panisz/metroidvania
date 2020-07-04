@@ -7,10 +7,18 @@ using System;
 
 public class PlayerManager : MonoBehaviour
 {
-    //[SerializeField] private float invincibleDuration=5f;
+    [Tooltip("the direction in which the player will be launched upon taking damage from a gameobject inheriting from ILaunchesAway")]
     [SerializeField] private Vector2 launchVect;
-    [SerializeField] private float stunnedDuration=1f;
+       
+    [Tooltip("The SFXPlayer associated with the player")]
     [SerializeField] private SFXPlayer sfx;
+
+    [Tooltip("The particle system played upon entering lava")]
+    [SerializeField] ParticleSystem smokeParticleSys;
+
+    [Tooltip("The clip played when being hurt")]
+    [SerializeField] private AnimationClip hurtClip;
+
     private Vector2 respawnPoint;
 
     PlayerController pc;
@@ -23,7 +31,6 @@ public class PlayerManager : MonoBehaviour
     DamageReceiver dr;
     Lava lava;
     Rigidbody2D rb;
-    [SerializeField] ParticleSystem smokeParticleSys;
 
     public delegate void emptyDlg();
     public event emptyDlg OnDamagedByLava;
@@ -85,9 +92,15 @@ public class PlayerManager : MonoBehaviour
         else if ((go.GetComponent<ILaunchesAway>() != null) && (hs.GetHealth() > 0f)) {
             TransformUtility.LaunchFromEnemy(rb, go.GetComponent<Transform>().position, launchVect);
             pc.StopControl();
-            anim.SetBool("isHurt", true);
-            coroutines.WaitThenExecute(stunnedDuration, () => {
-                pc.RegainControl();
+            anim.SetTrigger("isHurt");
+            pc.StopControl();
+            coroutines.WaitThenExecute(hurtClip.length, () => {
+
+                //regain control only if during the hurt animation we didn't die.
+                //otherwise, control will be regained in the Death() method
+                if (hs.GetHealth() > 0) { 
+                    pc.RegainControl();
+                }
             });
         }
     }

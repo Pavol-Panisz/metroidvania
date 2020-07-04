@@ -78,7 +78,7 @@ public class SFXPlayer : MonoBehaviour
             }
         }
 
-        Debug.Log("Tried to stop playing on loop '"+name+"', but it wasn't being played");
+        //Debug.Log("Tried to stop playing on loop '"+name+"', but it wasn't being played");
     }
 
     private void TryPlayInSources(Sound s, List<AudioSourceInfo> sourceIs) {

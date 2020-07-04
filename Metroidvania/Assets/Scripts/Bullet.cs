@@ -26,7 +26,6 @@ public class Bullet : MonoBehaviour, IDamageDealer, ILaunchesAway
     private void Start() {
         coroutines = Coroutines.GetInstance();
         sfx.TryStartPlayLooped("Flying");
-        Debug.Log("started playing flying");
     }
     private void OnTriggerEnter2D(Collider2D coll) {
 

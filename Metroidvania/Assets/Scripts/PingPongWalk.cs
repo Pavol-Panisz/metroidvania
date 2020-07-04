@@ -21,10 +21,6 @@ public class PingPongWalk : MonoBehaviour
     [SerializeField] private float walkSpeed;
     [SerializeField] [Range(-1, 1)] private int direction=1; 
 
-    
-
-    
-
     //states
     private bool wasTouchingLastF=false;
 
