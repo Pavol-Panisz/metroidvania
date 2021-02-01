@@ -20,6 +20,9 @@ public class TransformUtility : MonoBehaviour
     }
 
     public static void LaunchFromEnemy(Rigidbody2D rb, Vector3 enemyPos, Vector2 launchVect) {
+
+        Debug.Log("launching away from enemy");
+
         Transform tr = rb.GetComponent<Transform>();
 
         if ((tr.position - enemyPos).x <= 0f) { //if we're on the enemy's left

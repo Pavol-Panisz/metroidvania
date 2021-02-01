@@ -1,41 +1,47 @@
-﻿using System.Collections;
+﻿#region README
+/* Gives the player the ability to run, jump and climb.
+ * Delegates announce when each of these actions commence
+ * or stop.
+ */
+ #endregion README
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {  
-    #region variables_n_delegates
     //config
     [SerializeField] private float speed = 5f;
-    [SerializeField] private float m_jumpSpeed = 7f;
+    [SerializeField] private float jumpSpeed = 7f;
     [SerializeField] private float climbSpeed = 1f;
     
     //states
-    bool m_hasControl = true;
-    bool m_hadControlLastF = true;
-    bool m_isOnGround = false; 
-    bool m_wasOnGroundLastF = false;
-    bool m_isInLadder = false;
-    bool m_wasInLadderLastF = false;
-    bool m_movingInLadderThisF = false;
-    bool m_movingInLadderLastF = false;
-    bool m_holdingVertical = false;
+    bool hasControl = true;
+    bool hadControlLastF = true;
+    bool isOnGround = false; 
+    bool wasOnGroundLastF = false;
+    bool isInLadder = false;
+    bool wasInLadderLastF = false;
+    bool movingInLadderThisF = false;
+    bool movingInLadderLastF = false;
+    bool holdingVertical = false;
     
     //input states
-    bool m_holdingRun=false;
-    bool m_holdingRunLastF = false;
-    bool m_holdingJump=false;
-    float m_xAxis, m_yAxis;
+    bool holdingRunLastF = false;
+    bool holdingRun=false;
+    bool holdingJump=false;
+    float xAxis, yAxis;
 
     //cached variables
-    float m_originalGravitySc;
+    float originalGravitySc;
 
     //cached component references
     private Rigidbody2D rb;
     private Transform tr;
     public Animator anim;
-    private Collider2D m_col;
-    public Collider2D m_feetCol;
+    private Collider2D col;
+    public Collider2D feetCol;
     
     //delegates
     public delegate void emptyDlg();
@@ -46,16 +52,26 @@ public class PlayerController : MonoBehaviour
     public event emptyDlg OnStoppedClimbing;
     public event emptyDlg OnJumped;
     public event emptyDlg OnClimbedOnce;
-    #endregion variables_n_delegates
+    public event emptyDlg OnRegainedControl;
+
+    void Start()
+    {
+        rb = GetComponent<Rigidbody2D>();
+        tr = GetComponent<Transform>();
+        anim = GetComponent<Animator>();
+        col = GetComponent<Collider2D>();
+        
+        originalGravitySc = rb.gravityScale;
+    }
 
     void FixedUpdate() {
         
-        m_isOnGround = m_feetCol.IsTouchingLayers(LayerMask.GetMask("Ground"));
-        m_isInLadder = m_col.IsTouchingLayers(LayerMask.GetMask("Ladder"));
+        isOnGround = feetCol.IsTouchingLayers(LayerMask.GetMask("Ground"));
+        isInLadder = col.IsTouchingLayers(LayerMask.GetMask("Ladder"));
         
         fuClimbing();
         fuRunning();
-        fuJumping(m_jumpSpeed); //make this "speed-set" principle for all action-functions
+        fuJumping(jumpSpeed); 
         
         //if the player hit the ground this frame, stop his x- & y-velocity. 
         #region explanation
@@ -68,79 +84,69 @@ public class PlayerController : MonoBehaviour
 
         //added 13.6.: Why stop the y-vel aswell? It's because while jumping and hugging a wall, once
         //the player would hit that wall's corner, the feet collider would touch that corner, hence
-        //setting m_isOnGround to true. Since the player is holding the jump button at this time,
+        //setting isOnGround to true. Since the player is holding the jump button at this time,
         //they'd jump again. Jumping is just adding jump-velocity to the current velocity, so the 
         //player would jump really high.
         #endregion 
-
-        if (!m_wasOnGroundLastF && m_isOnGround) {
-            rb.velocity = new Vector2(0f, 0f/*rb.velocity.y*/);
-            if (m_hasControl) OnHitGround?.Invoke(); //the m_hasControl check is to make respawning silent
+        if (!wasOnGroundLastF && isOnGround) {
+            rb.velocity = Vector2.zero;
+            if (hasControl) OnHitGround?.Invoke(); //the hasControl check is to make respawning silent
         }
 
         #region start_stop_delegates
 
         //if started moving in the ladder this frame
-        if (m_movingInLadderThisF && !m_movingInLadderLastF && m_hasControl) OnStartedClimbing?.Invoke();
+        if (movingInLadderThisF && !movingInLadderLastF && hasControl) OnStartedClimbing?.Invoke();
 
         //if we latched onto the ladder but didn't move
-        if (m_isInLadder && ! m_wasInLadderLastF) OnClimbedOnce?.Invoke();
+        if (isInLadder && ! wasInLadderLastF) OnClimbedOnce?.Invoke();
 
         //if stopped moving in the ladder this frame
-        if (!m_movingInLadderThisF && m_movingInLadderLastF) OnStoppedClimbing?.Invoke();
+        if (!movingInLadderThisF && movingInLadderLastF) OnStoppedClimbing?.Invoke();
 
         //if started holding run this frame while on ground OR hit ground while holding run
-        if (m_hasControl) {
-            if ((m_holdingRun && !m_holdingRunLastF && m_isOnGround) || 
-                (m_holdingRun && m_isOnGround && !m_wasOnGroundLastF)) OnStartedRunning?.Invoke(); 
+        if (hasControl) {
+            if ((holdingRun && !holdingRunLastF && isOnGround) || 
+                (holdingRun && isOnGround && !wasOnGroundLastF)) OnStartedRunning?.Invoke(); 
         }
 
         //if stopped holding run this frame while on ground OR stopped being on ground this frame
-        if ((!m_holdingRun && m_holdingRunLastF && m_isOnGround) || 
-        (!m_isOnGround && m_wasOnGroundLastF)) OnStoppedRunning?.Invoke();
+        if ((!holdingRun && holdingRunLastF && isOnGround) || 
+        (!isOnGround && wasOnGroundLastF)) OnStoppedRunning?.Invoke();
         #endregion start_stop_delegates
 
-        m_holdingRunLastF = m_holdingRun;
-        m_wasOnGroundLastF = m_isOnGround;
-        m_wasInLadderLastF = m_isInLadder;
-        m_hadControlLastF = m_hasControl;
-        m_movingInLadderLastF = m_movingInLadderThisF;
+        holdingRunLastF = holdingRun;
+        wasOnGroundLastF = isOnGround;
+        wasInLadderLastF = isInLadder;
+        hadControlLastF = hasControl;
+        movingInLadderLastF = movingInLadderThisF;
     }
 
-    void Start()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        tr = GetComponent<Transform>();
-        anim = GetComponent<Animator>();
-        m_col = GetComponent<Collider2D>();
-        
-        m_originalGravitySc = rb.gravityScale;
-    }
 
     void Update()
     {
         //update input info
-        m_xAxis = Input.GetAxis("Horizontal"); //fetched in update, utilized also in fixed update
-        m_yAxis = Input.GetAxis("Vertical");
+        xAxis = Input.GetAxis("Horizontal"); //fetched in update, utilized also in fixed update
+        yAxis = Input.GetAxis("Vertical");
 
-        if (Mathf.Abs(m_xAxis) > Mathf.Epsilon) { //---running
-            m_holdingRun = true;
+        if (Mathf.Abs(xAxis) > Mathf.Epsilon) { //---running
+            holdingRun = true;
         }
         else {
-            m_holdingRun = false;
+            holdingRun = false;
         }
 
-        m_holdingVertical = false;
-        if (m_yAxis > Mathf.Epsilon) { //--------------jumping
-            m_holdingJump = true;
-            m_holdingVertical = true;
+        holdingVertical = false;
+        if (yAxis > Mathf.Epsilon) { //--------------jumping
+            holdingJump = true;
+            holdingVertical = true;
         }
         else {
-            m_holdingJump = false;
-            m_holdingVertical = true;
+            holdingJump = false;
+            holdingVertical = true;
         }
 
-        if (m_isInLadder) { //-------------------------climbing
+        if (isInLadder) { //-------------------------climbing
             anim.SetBool("isClimbing", true);
         }
         else {
@@ -155,17 +161,17 @@ public class PlayerController : MonoBehaviour
     }
 
     private void TryFlipSprite() {
-        if (!m_hasControl) {return;} 
+        if (!hasControl) {return;} 
         
         Vector3 scaleVect = tr.localScale; 
-        float dirSign = Mathf.Sign(m_xAxis);
+        float dirSign = Mathf.Sign(xAxis);
         tr.localScale = new Vector3(dirSign * Mathf.Abs(scaleVect.x), 
                                     scaleVect.y, 
                                     scaleVect.z);
     }
 
     private void uRunning() {
-        if (m_holdingRun) {
+        if (holdingRun) {
             anim.SetBool("isRunning", true);
             TryFlipSprite();
         }
@@ -173,20 +179,20 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isRunning", false);
         }
 
-        anim.SetBool("isOnGround", m_isOnGround);
+        anim.SetBool("isOnGround", isOnGround);
     }
 
     private void fuRunning() {
 
-        if (m_hasControl) {
-            float xVel = m_xAxis * speed; //no need to get xAxis in FixedUpdate
+        if (hasControl) {
+            float xVel = xAxis * speed; //no need to get xAxis in FixedUpdate
 
             //if running this frame
-            if (m_holdingRun) {
+            if (holdingRun) {
                 rb.velocity = new Vector2(xVel, rb.velocity.y);  
             }
             //if stopped running this frame
-            else if (!m_holdingRun && m_holdingRunLastF) { 
+            else if (!holdingRun && holdingRunLastF) { 
                 rb.velocity = new Vector2(0f, rb.velocity.y);
             }
         }
@@ -197,10 +203,10 @@ public class PlayerController : MonoBehaviour
     }
 
     private void fuJumping(float jumpSpeed, bool doForceJump=false) {
-        if (m_hasControl) {
+        if (hasControl) {
             //still not entirely sure, why this gets called twice per jump 
             //pressed - has to do with how its calculated
-            if (m_holdingJump && (m_isOnGround || doForceJump)) { 
+            if (holdingJump && (isOnGround || doForceJump)) { 
                 rb.velocity = new Vector2(rb.velocity.x, jumpSpeed);
                 OnJumped?.Invoke();
             }
@@ -227,25 +233,25 @@ public class PlayerController : MonoBehaviour
         
         //TODO document this discovery!!!
         //does not work when collider is part of composite collider
-        //m_isInLadder = ladderCol.OverlapPoint(m_col.bounds.center);
+        //isInLadder = ladderCol.OverlapPoint(col.bounds.center);
         
-        //setting m_isInLadder in OnTriggerEnter/Exit2D would also not
+        //setting isInLadder in OnTriggerEnter/Exit2D would also not
         //work. Solution? Change the ladders' physics shape so that the
         //player's collider is always touching some ladder's surface,
         //meaning it can never be 'fully' in it. 
         
-        if (m_isInLadder & m_hasControl) {
+        if (isInLadder & hasControl) {
             rb.gravityScale = 0f;
 
             //if the player entered the ladder this frame or regained control this frame
-            if (!m_wasInLadderLastF || !m_hadControlLastF) {
+            if (!wasInLadderLastF || !hadControlLastF) {
                 rb.velocity = Vector2.zero;
             }
             //otherwise, handle the input
             else { 
                 //if holding up or down
-                if (Mathf.Abs(m_yAxis) > Mathf.Epsilon) {
-                    rb.velocity = new Vector2(rb.velocity.x, m_yAxis*climbSpeed);
+                if (Mathf.Abs(yAxis) > Mathf.Epsilon) {
+                    rb.velocity = new Vector2(rb.velocity.x, yAxis*climbSpeed);
                 }
                 else { //if not holding up or down
                     rb.velocity = new Vector2(rb.velocity.x, 0f);
@@ -255,27 +261,28 @@ public class PlayerController : MonoBehaviour
         }
         
         //if exit ladder this frame
-        else if (m_wasInLadderLastF && !m_isInLadder) {
-            fuJumping(m_jumpSpeed*0.75f, true); //make the player able to do a off-the-ladder jump.
+        else if (wasInLadderLastF && !isInLadder) {
+            fuJumping(jumpSpeed*0.75f, true); //make the player able to do a off-the-ladder jump.
         }
         else {
-            rb.gravityScale = m_originalGravitySc;
+            rb.gravityScale = originalGravitySc;
         }
 
-        m_movingInLadderThisF = true;
+        movingInLadderThisF = true;
         //if not in the ladder OR in the ladder but not moving
-        if ((!m_isInLadder) || (m_isInLadder && rb.velocity == Vector2.zero)) {
-            m_movingInLadderThisF = false;
+        if ((!isInLadder) || (isInLadder && rb.velocity == Vector2.zero)) {
+            movingInLadderThisF = false;
         }
     }
 
     public void StopControl() {
-        m_hasControl = false;
+        hasControl = false;
     }
 
     public void RegainControl() {
-        m_hasControl = true;
+        hasControl = true;
         anim.SetBool("isHurt", false);
+        OnRegainedControl?.Invoke();
     }
 
 }

@@ -1,4 +1,19 @@
-﻿using System.Collections;
+﻿#region README
+/* A system for playing audio both on loop and only once. Other scripts 
+ * can call TryPlayOnce(string name) or 
+ * TryStartPlayLooped(string name) / TryStopPlayLooped(string name).
+ * 
+ * To give a gameobject the ability to play sound, give it a SFXPlayer
+ * component and create two additional gameobjects: One which will
+ * house all audiosystems used to play sounds once and one which will
+ * play all sounds on repeat. Give these two gameobjects as many 
+ * audiosources as you'd like and then drag the two gameobjects into
+ * SFXPlayer's playOnce/playLoopHolder fields.
+ * Next, populate the SFXPlayer's sounds array.
+ */
+#endregion README
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -157,7 +172,9 @@ public class Sound {
     public AudioClip clip;
     [Range(-0f, 1f)] public float volume=0;
     [Range(-3f, 3f)] public float pitch=0;
-    public float pitchModulation=0;
+    
+    [Tooltip("Whenever a sound starts playing or starts a new loop, by how much can its pitch change")]
+    public float pitchModulation=0; 
     public float maxDistance=0;
 
     public Sound() {
@@ -167,7 +184,7 @@ public class Sound {
     }
 }
 
-//holds an audioSource & playback information used when changing the pitch
+//holds an audioSource & playback information which are used when changing the pitch
 [System.Serializable]
 public class AudioSourceInfo {
     public AudioSource source;

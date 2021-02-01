@@ -34,6 +34,7 @@ public class PlayerManager : MonoBehaviour
 
     public delegate void emptyDlg();
     public event emptyDlg OnDamagedByLava;
+    public event emptyDlg OnDeath;
 
     private void Start() {
         rb = GetComponent<Rigidbody2D>();
@@ -71,6 +72,8 @@ public class PlayerManager : MonoBehaviour
 
     public void ProcessDamager(GameObject go) {
 
+        Debug.Log("processing damage received from "+go.name);
+
         //if we were damaged by lava
         if (go.GetComponent<Lava>() != null) {
 
@@ -106,7 +109,9 @@ public class PlayerManager : MonoBehaviour
     }
 
     private void Death() {
-        
+
+        OnDeath?.Invoke();
+
         anim.SetBool("isDead", true);
         pc.StopControl(); 
         Debug.Log("stopped control");

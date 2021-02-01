@@ -285,9 +285,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   launchVect: {x: 5, y: 10}
-  stunnedDuration: 1
   sfx: {fileID: 9142018487346989107}
   smokeParticleSys: {fileID: 4551477572010084047}
+  hurtClip: {fileID: 7400000, guid: d27528cb2607d0e46a34d2611c73f608, type: 2}
 --- !u!114 &8213249587746672517
 MonoBehaviour:
   m_ObjectHideFlags: 0

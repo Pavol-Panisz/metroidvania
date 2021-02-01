@@ -469,6 +469,16 @@ PrefabInstance:
       propertyPath: m_Follow
       value: 
       objectReference: {fileID: 595481696}
+    - target: {fileID: 5388308393427235502, guid: 25daaa309b1224f479cf8fad739a0e74,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 58.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5388308393427235502, guid: 25daaa309b1224f479cf8fad739a0e74,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16
+      objectReference: {fileID: 0}
     - target: {fileID: 7681868000745285638, guid: 25daaa309b1224f479cf8fad739a0e74,
         type: 3}
       propertyPath: orthographic size
@@ -477,7 +487,7 @@ PrefabInstance:
     - target: {fileID: 7681868000745285881, guid: 25daaa309b1224f479cf8fad739a0e74,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 58.4
+      value: 52.31137
       objectReference: {fileID: 0}
     - target: {fileID: 7681868000745285881, guid: 25daaa309b1224f479cf8fad739a0e74,
         type: 3}
