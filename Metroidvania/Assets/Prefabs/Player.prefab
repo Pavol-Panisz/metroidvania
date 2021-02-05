@@ -223,7 +223,7 @@ Rigidbody2D:
   m_GravityScale: 4
   m_Material: {fileID: 0}
   m_Interpolate: 0
-  m_SleepingMode: 0
+  m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!70 &5667552805344459957
@@ -255,10 +255,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 6
-  m_jumpSpeed: 20
+  jumpSpeed: 20
   climbSpeed: 5
   anim: {fileID: 1286189013026383185}
-  m_feetCol: {fileID: 6998437875172115926}
+  feetCol: {fileID: 6998437875172115926}
 --- !u!114 &6707299654106778889
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -272,6 +272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 4
+  limboOnDeath: 0
 --- !u!114 &1156026807128438881
 MonoBehaviour:
   m_ObjectHideFlags: 0

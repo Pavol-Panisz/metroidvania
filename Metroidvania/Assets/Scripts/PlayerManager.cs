@@ -108,7 +108,7 @@ public class PlayerManager : MonoBehaviour
         }
     }
 
-    private void Death() {
+    private void Death(bool doDestroy) { // no need to handle the non destructive death, since it never happens
 
         OnDeath?.Invoke();
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class ShootingEnemy : MonoBehaviour
 {
@@ -62,7 +63,7 @@ public class ShootingEnemy : MonoBehaviour
     [Header("Misc")]
     [SerializeField] private float dyingDuration=2f;
 
-    private int currentDamageSpIndex=-1;
+    public int currentDamageSpIndex=-1;
     private bool canSeeTarget=false;
     private float shootTimer = 0f;
     private bool justSpottedTarget=true;
@@ -82,21 +83,27 @@ public class ShootingEnemy : MonoBehaviour
     private Coroutines coroutines;
     private HealthSystem hs;
     private SpriteRenderer sr;
+
+    public Action OnFinishedNonDestructiveDeath;
+
     #endregion variables
 
-    private void Start() {
+    private void Awake()
+    {
+        coroutines = Coroutines.GetInstance();
+        hs = GetComponent<HealthSystem>();
+        sr = GetComponent<SpriteRenderer>();
         tr = GetComponent<Transform>();
         pingPongWalk = GetComponent<PingPongWalk>();
+    }
+
+    private void Start() {
 
         if (!target) {
             target = GameObject.FindGameObjectWithTag("Player");
         }
-        
         targetTr = target.GetComponent<Transform>();
         targetRb = target.GetComponent<Rigidbody2D>();
-        coroutines = Coroutines.GetInstance();
-        hs = GetComponent<HealthSystem>();
-        sr = GetComponent<SpriteRenderer>();
 
         hs.OnDeath += Death;
         hs.OnTakenDamage += ChangeSprite;
@@ -104,7 +111,7 @@ public class ShootingEnemy : MonoBehaviour
     
         armHomeRotation = armRotationPivot.eulerAngles;
 
-        nextIdleSoundT = Time.time + Random.Range(idleSoundMin, idleSoundMax);
+        nextIdleSoundT = Time.time + UnityEngine.Random.Range(idleSoundMin, idleSoundMax);
         sfx.TryStartPlayLooped("Walk");
     }
 
@@ -126,6 +133,9 @@ public class ShootingEnemy : MonoBehaviour
     }
 
     private void FixedUpdate() {
+
+        if (hs.GetHealth() <= 0) { return; } //if dead, do nothing
+
         Vector2 dir = targetTr.position - raycastBeginTr.position;
         rh = Physics2D.Raycast(raycastBeginTr.position, dir, sightDist, sightLayerMask);
         
@@ -145,7 +155,7 @@ public class ShootingEnemy : MonoBehaviour
         if (Time.time >= nextIdleSoundT) {
             sfx.TryPlayOnce("Idle");
             
-            float waitPeriodT = Random.Range(idleSoundMin, idleSoundMax);
+            float waitPeriodT = UnityEngine.Random.Range(idleSoundMin, idleSoundMax);
             nextIdleSoundT = Time.time + waitPeriodT;
         }
         
@@ -228,11 +238,20 @@ public class ShootingEnemy : MonoBehaviour
         sfx.TryPlayOnce("Shoot");
     }
 
-    private void Death() {
+    private void Death(bool doDestroy) {
         sfx.TryPlayOnce("Dead");
-        Destroy(feetAnimator?.gameObject);
-        Destroy(armRotationPivot.gameObject);
-        Destroy(gameObject, dyingDuration);
+        sfx.TryStopPlayLooped("Walk");
+        pingPongWalk.enabled = false;
+
+        if (doDestroy)
+        {
+            Destroy(feetAnimator?.gameObject);
+            Destroy(armRotationPivot.gameObject);
+            Destroy(gameObject, dyingDuration);
+        } else
+        {
+            OnFinishedNonDestructiveDeath?.Invoke(); // ShootingEnemyEE leverages this
+        }
     }
 
     private void OnStateChangedTo(States st) {
@@ -242,8 +261,9 @@ public class ShootingEnemy : MonoBehaviour
             case States.Patrolling:
                 //Debug.Log("state changed to patrolling");
                 shootTimer = 0f;
-                pingPongWalk.enabled = true; 
+                pingPongWalk.enabled = true;
                 feetAnimator?.StartWaving();
+                sfx.TryStopPlayLooped("Walk"); // hack bugfix
                 sfx.TryStartPlayLooped("Walk");
                 break;
 
@@ -265,9 +285,16 @@ public class ShootingEnemy : MonoBehaviour
     }
 
     private void ChangeSprite(float f) {
+
+        if (hs.GetHealth() <= 0) { return; } //if dead, do nothing
+
         currentDamageSpIndex += 1;
         if (currentDamageSpIndex < damageSprites.Length) {
             sr.sprite = damageSprites[currentDamageSpIndex];
+        }
+        else
+        {
+            Debug.LogError($"the damage sprite index was {currentDamageSpIndex}");
         }
     }
 

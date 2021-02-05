@@ -11,11 +11,13 @@ public class HealthSystem : MonoBehaviour
     private bool isDead=false;
 
     public delegate void eventDelegate();
-    public event eventDelegate OnDeath;
+    public Action<bool> OnDeath;
     public delegate void floatArgDelegate(float f);
     public event floatArgDelegate OnHealed;
     public event floatArgDelegate OnTakenDamage;
     public event floatArgDelegate OnSetupHealth;
+
+    public bool destroyOnDeath = true;
 
     private void Start() {
         health = maxHealth;
@@ -24,14 +26,14 @@ public class HealthSystem : MonoBehaviour
 
     public void Heal(float f) {
 
-        OnHealed?.Invoke(f);
         health += f;
         if (health > maxHealth) {
-            health = f;
+            health = maxHealth;
         }
         if (health > 0) {
             isDead = false;
         }
+        OnHealed?.Invoke(f);
     }
 
     public void Damage(float f) {
@@ -40,8 +42,10 @@ public class HealthSystem : MonoBehaviour
 
         if (health <= 0f) {
             health = 0f; //minimum health
-            if (!isDead) { //call OnDeath when the player dies
-                OnDeath?.Invoke();
+            if (!isDead) { //call OnDeath when the entity dies
+
+                OnDeath?.Invoke(destroyOnDeath);
+
                 isDead = true;
                 }
         }
@@ -50,13 +54,17 @@ public class HealthSystem : MonoBehaviour
     public float GetHealth() {
         return health;
     }
+    public float GetMaxHealth()
+    {
+        return maxHealth;
+    }
 
     public void SetInvincible(bool b) {
         isInvincible = b;
     }
 
     public void FullHealth() {
-        Heal(maxHealth);
+        Heal(maxHealth - health);
     }
 
 }

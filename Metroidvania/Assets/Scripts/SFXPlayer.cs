@@ -92,6 +92,7 @@ public class SFXPlayer : MonoBehaviour
                 return;
             }
         }
+        //Debug.Log("not found"); 
 
         //Debug.Log("Tried to stop playing on loop '"+name+"', but it wasn't being played");
     }

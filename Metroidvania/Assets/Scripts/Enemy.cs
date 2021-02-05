@@ -28,13 +28,17 @@ public class Enemy : MonoBehaviour, IDamageDealer, ILaunchesAway
         return m_damage;
     }
 
-    private void Death() {
+    private void Death(bool doDestroy) {
         sfx.TryStopPlayLooped("Walk");
         sfx.TryPlayOnce("Death");
         m_damage = 0f;
-        Debug.Log("enemy dying");
+        //Debug.Log("enemy dying");
         anim.SetBool("isDead", true);
         walkSys.enabled = false;
-        Destroy(gameObject, dyingDuration);
+
+        if (doDestroy)
+        {
+            Destroy(gameObject, dyingDuration);
+        }
     }
 }

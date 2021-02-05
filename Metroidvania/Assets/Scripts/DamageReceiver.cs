@@ -22,8 +22,12 @@ public class DamageReceiver : MonoBehaviour
     public delegate void emptyDlg();
     public event emptyDlg OnTakenDamage;
 
-    private void Start() {
+    private void Awake()
+    {
         rb = GetComponent<Rigidbody2D>();
+    }
+
+    private void Start() {
         coroutines = Coroutines.GetInstance();
 
         collideableLayersMask = Physics2D.GetLayerCollisionMask(dmgDetectionCollider.gameObject.layer);

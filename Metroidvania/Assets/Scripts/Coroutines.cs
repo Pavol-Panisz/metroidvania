@@ -13,6 +13,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class Coroutines : MonoBehaviour
 {
@@ -36,6 +37,13 @@ public class Coroutines : MonoBehaviour
         //Debug.Log(timeSinceBirth);
     }
     
+    // Added after I leanred what Actions are
+    public void WaitThenExecuteAction(float t, Action act)
+    {
+        voidDlg vdlg = () => act?.Invoke();
+        WaitThenExecute(t, vdlg);
+    }
+
     public void WaitThenExecute(float t, voidDlg dlg) {
 
         StartCoroutine(CorotWaitThenExecute(t, dlg));

@@ -15,7 +15,6 @@ public class CustomButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
 
     static CustomButton currentlySelected = null;
 
-
     public bool isSelected = false;
 
     public void OnPointerEnter(PointerEventData data)
