@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Events;
 
 public class LevelExit : MonoBehaviour, IInteractable
 {
@@ -9,6 +10,9 @@ public class LevelExit : MonoBehaviour, IInteractable
     private ScreenFader sf;
     private Coroutines coroutines;
     //private GameManager gm;
+
+    public bool switchesScene = true;
+    public UnityEvent OnEnterNoSwitch;
 
     private void Start() {
         sf = FindObjectOfType<ScreenFader>();
@@ -40,7 +44,16 @@ public class LevelExit : MonoBehaviour, IInteractable
     }
 
     public void interact() {
-        NextScene();
+        if (switchesScene) NextScene();
+
+        else
+        {
+            sf.FadeIn();
+            coroutines.WaitThenExecuteAction(1f, () => {
+                OnEnterNoSwitch.Invoke();
+                sf.FadeOut();
+            });
+        }
     }
 
 }

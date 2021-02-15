@@ -9,6 +9,7 @@ TagManager:
   - LevelExit
   - RespawnCam
   - Tilemap
+  - Non_UI_Bound
   layers:
   - Default
   - TransparentFX

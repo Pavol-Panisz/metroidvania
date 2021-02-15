@@ -272,7 +272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 4
-  limboOnDeath: 0
+  destroyOnDeath: 1
 --- !u!114 &1156026807128438881
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,8 +425,8 @@ CapsuleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: -0.08}
-  m_Size: {x: 0.59, y: 0.79}
+  m_Offset: {x: -0.005346298, y: -0.053263485}
+  m_Size: {x: 0.65771866, y: 0.8434731}
   m_Direction: 0
 --- !u!1 &7785011426260025185
 GameObject:

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 /*
  * Keeps track of all entities (player, flag, level exit, shooting & walking enemy).
@@ -9,8 +10,15 @@ using UnityEngine;
  */
 public class Entities : MonoBehaviour
 {
+    [SerializeField] private EntityTrashCan entityTrashCan;
+    [Space]
     [SerializeField] private LevelControl levelControl;
+    [SerializeField] private PlayerEE player;
+    [SerializeField] private LevelExitEE levelExit;
+    [Space]
     [SerializeField] private List<EditorEntity> shootingEnemies;
+    [SerializeField] private List<EditorEntity> walkingEnemies;
+    [SerializeField] private List<EditorEntity> checkpoints;
 
     [System.Serializable]
     public struct EntityInstance { 
@@ -37,7 +45,7 @@ public class Entities : MonoBehaviour
     // DEBUG - this should be called in when drag n dropping an entity
     private void Start()
     {
-        foreach (var e in shootingEnemies) e.UpdateTransform();
+        //foreach (var e in shootingEnemies) e.UpdateTransform();
     }
 
     private void OnSwitchedMode(LevelControl.Modes m)
@@ -45,11 +53,19 @@ public class Entities : MonoBehaviour
         EntityPlacement.beingHeld = null;
         if (m == LevelControl.Modes.Edit)
         {
+            player.OnEnterEditMode();
+            levelExit.OnEnterEditMode();
             foreach (var e in shootingEnemies) e.OnEnterEditMode();
+            foreach (var e in walkingEnemies) e.OnEnterEditMode();
+            foreach (var e in checkpoints) e.OnEnterEditMode();
         }
         else if (m == LevelControl.Modes.Play)
         {
+            player.OnEnterPlayMode();
+            levelExit.OnEnterPlayMode();
             foreach (var e in shootingEnemies) e.OnEnterPlayMode();
+            foreach (var e in walkingEnemies) e.OnEnterPlayMode();
+            foreach (var e in checkpoints) e.OnEnterPlayMode();
         }
     }
 
@@ -74,12 +90,60 @@ public class Entities : MonoBehaviour
             case "Shooting_Enemy":
                 shootingEnemies.Add(instance);
                 break;
+            case "Walking_Enemy":
+                walkingEnemies.Add(instance);
+                break;
+            case "Checkpoint":
+                checkpoints.Add(instance);
+                break;
             default:
                 Debug.LogError($"Unhandled strType {strType}");
                 break;
         }
 
         instance.entityPlacement.StartBeingHeld();
+        instance.entityPlacement.OnDropped += entityTrashCan.CheckDestroy;
         instance.OnEnterEditMode(); // turn it's brain off immediately
+    }
+
+    public void Destroy(EditorEntity ee)
+    {
+        Type type = ee.GetType();
+
+        List<EditorEntity> targetList = null;
+
+        if (type == typeof(ShootingEnemyEE))
+        {
+            targetList = shootingEnemies;
+        } 
+        else if (type == typeof(WalkingEE))
+        {
+            targetList = walkingEnemies;
+        }
+        else if (type == typeof(CheckpointEE))
+        {
+            targetList = checkpoints;
+        }
+        else if (type == typeof(LevelExitEE))
+        {
+
+        }
+        else if (type == typeof(PlayerEE))
+        {
+
+        }
+
+        // once done, search it in the target list and destroy it
+        if (targetList != null)
+        {
+            for (int iii = 0; iii < targetList.Count; iii++)
+            {
+                if (targetList[iii].Equals(ee))
+                {
+                    targetList.RemoveAt(iii);
+                    Destroy(ee.gameObject);
+                }
+            }
+        }
     }
 }

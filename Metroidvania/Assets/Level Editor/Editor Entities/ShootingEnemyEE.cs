@@ -21,7 +21,6 @@ using UnityEngine;
  */
 #endregion what is LIMBO?
 
-[RequireComponent(typeof(HealthSystem))]
 public class ShootingEnemyEE : EditorEntity
 {
     [Header("Get disabled in different stages")]
@@ -80,6 +79,7 @@ public class ShootingEnemyEE : EditorEntity
         sfx.TryStopPlayLooped("Walk");
         foreach (var c in enabledOnlyInPlayModeAlive) c.enabled = false;
         foreach (var c in enabledOnlyInEditMode) c.enabled = true;
+        rb.simulated = false;
     }
     public override void OnEnterPlayMode()
     {
@@ -89,6 +89,7 @@ public class ShootingEnemyEE : EditorEntity
         sfx.TryStartPlayLooped("Walk");
         foreach (var c in enabledOnlyInPlayModeAlive) c.enabled = true;
         foreach (var c in enabledOnlyInEditMode) c.enabled = false;
+        rb.simulated = true;
     }
     public void Respawn() // when you restart the level in play mode
     {

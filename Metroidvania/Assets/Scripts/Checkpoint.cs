@@ -5,10 +5,10 @@ using System;
 
 public class Checkpoint : MonoBehaviour, IInteractable
 {
-    [SerializeField] private int priority;
+    [SerializeField] private int priority; 
     [SerializeField] private Sprite capturedSprite;
     [SerializeField] private SFXPlayer sfx;
-    private static int stCurrentPriority;
+    public static int stCurrentPriority;
     private Vector2 respawnPoint;
     private PlayerManager plM;
     private SpriteRenderer sr;
@@ -29,7 +29,7 @@ public class Checkpoint : MonoBehaviour, IInteractable
         sr = GetComponent<SpriteRenderer>();
 
         respawnPoint = transform.position + Vector3.up;
-        stCurrentPriority = -1;
+        stCurrentPriority = -1; // Resets the current largest priority
     }
 
     public void interact() {

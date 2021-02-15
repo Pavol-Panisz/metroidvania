@@ -16,7 +16,8 @@ public class CommonPlayMode : MonoBehaviour
     // kinda bad design, cause we also have this in CommonEditMode. Maybe 
     //make a separate CameraControl.cs, where the camera's handled? 
     //(panning zooming..//
-    [SerializeField] CinemachineBrain cinemachineBrain; 
+    [SerializeField] CinemachineBrain cinemachineBrain;
+    [SerializeField] Transform playerTr;
 
     private void OnEnable()
     {
@@ -34,6 +35,7 @@ public class CommonPlayMode : MonoBehaviour
             healthDisplayToggleable.gameObject.SetActive(true);
             LayoutRebuilder.ForceRebuildLayoutImmediate(healthDisplayToggleable);
 
+            Camera.main.transform.position = playerTr.position;
             cinemachineBrain.enabled = true;
         }
         else if (m == LevelControl.Modes.Edit)

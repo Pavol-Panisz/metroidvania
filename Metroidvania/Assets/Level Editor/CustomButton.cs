@@ -5,7 +5,8 @@ using UnityEngine.EventSystems;
 using UnityEngine.Events;
 using UnityEngine.UI;
 
-public class CustomButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler, IPointerExitHandler
+public class CustomButton : MonoBehaviour, IPointerEnterHandler, 
+        IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
 {
     public UnityEvent OnClick;
     public Sprite selectedSprite;
@@ -13,12 +14,21 @@ public class CustomButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
     public Sprite notHoveredSprite;
     public Image selectionImage;
 
+    [Space]
+    [Tooltip("If false, even if you just start pressing the LMB, it'll count as a click." 
+            + " If true, a click only registers if you start and also stop pressing the LMB inside.")]
+    [SerializeField] private bool clickMustFinishInside = true;
+
     static CustomButton currentlySelected = null;
 
     public bool isSelected = false;
 
+    private bool pressedDownHere = false;
+    private bool isMouseInside = false;
+
     public void OnPointerEnter(PointerEventData data)
     {
+        isMouseInside = true;
         if (!isSelected)
         {
             selectionImage.sprite = hoveredSprite;
@@ -27,14 +37,35 @@ public class CustomButton : MonoBehaviour, IPointerClickHandler, IPointerEnterHa
 
     public void OnPointerExit(PointerEventData data)
     {
+        isMouseInside = false;
         if (!isSelected)
         {
             selectionImage.sprite = notHoveredSprite;
         }
     }
 
-    public void OnPointerClick(PointerEventData data)
+    public void OnPointerDown(PointerEventData data)
     {
+        pressedDownHere = true;
+        if (!clickMustFinishInside)
+        {
+            Click();
+            pressedDownHere = false;
+        }
+    }
+
+    public void OnPointerUp(PointerEventData data)
+    {
+        if (clickMustFinishInside && pressedDownHere && isMouseInside)
+        {
+            Click();
+        }
+        pressedDownHere = false;
+    }
+
+    private void Click()
+    {
+
         DeselectCurrent();
 
         isSelected = true;

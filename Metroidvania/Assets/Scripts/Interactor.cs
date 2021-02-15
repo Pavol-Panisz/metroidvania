@@ -7,7 +7,9 @@ using UnityEngine;
 public class Interactor : MonoBehaviour
 {
     private void OnTriggerEnter2D(Collider2D coll) {
-        IInteractable ie = coll.GetComponent<IInteractable>();
+
+        // Absolutely disgusting.
+        IInteractable ie = coll.GetComponent<IInteractable>(); 
 
         if (ie != null) {
             ie.interact();

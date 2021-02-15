@@ -43,7 +43,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 869c02949b2db724bba568013f2b13e2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  entity: {fileID: 782283703335651133}
   mouseOverSpriteRenderer: {fileID: 7253198291097405544}
+  changeColorRenderers:
+  - {fileID: 7253198291097405544}
+  - {fileID: 7253198292193562287}
+  - {fileID: 7253198291078414747}
+  - {fileID: 7253198291267229933}
+  mouseOverColor: {r: 0.277, g: 0.4929246, b: 1, a: 1}
+  beingDraggedColor: {r: 1, g: 1, b: 1, a: 0.69411767}
 --- !u!1001 &3497864255659117819
 PrefabInstance:
   m_ObjectHideFlags: 0
