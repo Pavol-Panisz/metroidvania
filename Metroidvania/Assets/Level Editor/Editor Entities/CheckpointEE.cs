@@ -17,6 +17,11 @@ public class CheckpointEE : EditorEntity
     [SerializeField] private Behaviour[] enabledOnlyInPlayModeAlive;
     [SerializeField] private Behaviour[] enabledOnlyInEditMode;
 
+    private void Awake()
+    {
+        saveSystemId = "checkpoint";
+    }
+
     private void Start() // called only once, when a new instance gets created
     {
 

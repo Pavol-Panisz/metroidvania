@@ -6,7 +6,10 @@ public class LevelExitEE : EditorEntity
 {
     [SerializeField] private SpriteRenderer editorSpriteRenderer;
 
-
+    private void Awake()
+    {
+        saveSystemId = "level_exit";
+    }
     private void OnEnable()
     {
         entityPlacement.OnDropped += UpdateTransform;

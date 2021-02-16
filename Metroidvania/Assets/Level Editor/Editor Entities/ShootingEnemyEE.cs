@@ -69,7 +69,8 @@ public class ShootingEnemyEE : EditorEntity
 
     private void Awake()
     {
-        ogBodySprite = bodyRenderer.sprite;        
+        ogBodySprite = bodyRenderer.sprite;
+        saveSystemId = "shooting_enemy";
     }
 
     public override void OnEnterEditMode()

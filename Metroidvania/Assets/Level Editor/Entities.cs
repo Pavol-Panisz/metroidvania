@@ -13,12 +13,12 @@ public class Entities : MonoBehaviour
     [SerializeField] private EntityTrashCan entityTrashCan;
     [Space]
     [SerializeField] private LevelControl levelControl;
-    [SerializeField] private PlayerEE player;
-    [SerializeField] private LevelExitEE levelExit;
+    public EditorEntity player;
+    public EditorEntity levelExit;
     [Space]
-    [SerializeField] private List<EditorEntity> shootingEnemies;
-    [SerializeField] private List<EditorEntity> walkingEnemies;
-    [SerializeField] private List<EditorEntity> checkpoints;
+    public List<EditorEntity> shootingEnemies;
+    public List<EditorEntity> walkingEnemies;
+    public List<EditorEntity> checkpoints;
 
     [System.Serializable]
     public struct EntityInstance { 

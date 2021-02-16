@@ -15,6 +15,11 @@ public class PlayerEE : EditorEntity
     private Vector3 ogPosition;
     private Quaternion ogRotation;
 
+    private void Awake()
+    {
+        saveSystemId = "player";
+    }
+
     private void Start()
     {
         UpdateTransform();

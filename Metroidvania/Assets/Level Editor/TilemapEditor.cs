@@ -19,6 +19,10 @@ public class TilemapEditor : MonoBehaviour
     [SerializeField] private LevelControl levelControl;
     [SerializeField] private CommonEditMode editModeControl;
     [Space]
+    [Header("The min and max placeable points")]
+    [SerializeField] private Vector2Int lowerLeft;
+    [SerializeField] private Vector2Int upperRight;
+    [Space]
     [Header("Colliders of different layers")]
     public CompositeCollider2D foregroundCol;
     public CompositeCollider2D ladderCol;
@@ -77,6 +81,8 @@ public class TilemapEditor : MonoBehaviour
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
 
         var tilePos = new Vector3Int((int)mousePos.x, (int)mousePos.y, 0);
+        tilePos.x = Mathf.Clamp(tilePos.x, lowerLeft.x, upperRight.x);
+        tilePos.y = Mathf.Clamp(tilePos.y, lowerLeft.x, upperRight.y);
         tilePlacementIndicator.position = tilePos;
         tilePlacementIndicator.position += new Vector3(0.5f, 0.5f, 0f);
 

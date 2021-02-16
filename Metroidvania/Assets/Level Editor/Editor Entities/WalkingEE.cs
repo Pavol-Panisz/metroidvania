@@ -17,6 +17,11 @@ public class WalkingEE : EditorEntity
 
     Coroutine destroyingCorot;
 
+    private void Awake()
+    {
+        saveSystemId = "walking_enemy";
+    }
+
     private void OnEnable()
     {
         walkingEnemy.OnFinishedNonDestructiveDeath += OnFinishedNotDestructiveDeath;
