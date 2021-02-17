@@ -11,6 +11,8 @@ public class TilemapSerialization : MonoBehaviour
 {
     [SerializeField] private TilemapEditor tilemapEditor;
 
+    public static char airChar = '.';
+
     [System.Serializable]
     private class TileRepresentation
     {
@@ -23,30 +25,36 @@ public class TilemapSerialization : MonoBehaviour
 
 
     [System.Serializable]
-    private class TileMapRepresentation
+    public class TileMapRepresentation
     {
-        [SerializeField] private Tilemap associatedTilemap;
+        public Tilemap associatedTilemap;
+        public string saveSystemLayerId;
         private char[][] arr;
 
         private Vector2Int size;
+
+        Dictionary<TileBase, char> tileToChar;
 
         public void Initialize(TilemapEditor tilemapEditor, Dictionary<TileBase, char> tileToCharDict)
         {
             size = tilemapEditor.GetTilemapSize();
             arr = new char[size.x][];
 
-            // It's <= / >= because if the two corners are the same, it means the tilemap's 1x1 tiles large
-            for (int xxx = 0; xxx <= size.x; xxx++) 
+            this.tileToChar = tileToCharDict;
+
+            for (int xxx = 0; xxx < size.x; xxx++)
             {
-                for (int yyy = 0; yyy <= size.y; yyy++)
+                arr[xxx] = new char[size.y];
+
+                for (int yyy = 0; yyy < size.y; yyy++)
                 {
-                    arr[xxx][yyy] = tileToCharDict[null]; // populate it all with air for now
+                    arr[xxx][yyy] = airChar; // populate it all with air for now
                 }
             }
 
             Debug.Log("init");
         }
-    
+
         /// <summary>
         /// Sets the tilemap's char representaton tile. DOES NOT place the tile on the actual
         /// tilemap!
@@ -54,15 +62,52 @@ public class TilemapSerialization : MonoBehaviour
         public void SetTileChar(TileBase tile, Vector3Int pos)
         {
             Vector2Int arrPos = new Vector2Int(0, 0);
-            //arrPos.x = 
+            arrPos = TilemapToCharmapCoords(pos);
+
+            //Debug.Log($"placing at {arrPos.ToString()}");
+            arr[arrPos.x][arrPos.y] = tileToChar[tile];
         }
 
-        
+        public void SetAir(Vector3Int pos)
+        {
+            Vector2Int arrPos = new Vector2Int(0, 0);
+            arrPos = TilemapToCharmapCoords(pos);
+            arr[arrPos.x][arrPos.y] = airChar;
+        }
+
+        public Vector2Int TilemapToCharmapCoords(Vector3Int pos)
+        {
+            Vector2Int arrPos = new Vector2Int(0, 0);
+            arrPos.x = pos.x - 1;
+            arrPos.y = size.y - pos.y;
+
+            return arrPos;
+        }
+
+        public string GetCharmapString()
+        {
+            string content = "";
+
+            for (int yyy=0; yyy < size.y; yyy++)
+            {
+                char[] line = new char[size.x];
+                for (int xxx = 0; xxx < size.x; xxx++)
+                {
+                    line[xxx] = arr[xxx][yyy];
+                }
+                content += new string(line) + "\n";
+            }
+
+            Debug.Log(content);
+            return content;
+        }
+
     }
 
-    [SerializeField] private List<TileMapRepresentation> tilemapRepresentations = 
+    // public, cause SavingSystem will go through each charmap to get its string into the save file
+    public List<TileMapRepresentation> tilemapRepresentations =
                 new List<TileMapRepresentation>();
-    private Dictionary<Tilemap, TileMapRepresentation> tilemapToCharMapDict = 
+    private Dictionary<Tilemap, TileMapRepresentation> tilemapToCharMapDict =
                 new Dictionary<Tilemap, TileMapRepresentation>();
 
     private void Awake()
@@ -78,12 +123,14 @@ public class TilemapSerialization : MonoBehaviour
             tileCharsDict.Add(tr.tile, tr.chr);
             used.Add(tr.chr);
         }
-    
-        // create the individual char maps
+
+        // create the individual char maps and then the tilemap dict
         foreach (var chrmp in tilemapRepresentations)
         {
             chrmp.Initialize(tilemapEditor, tileCharsDict);
+            tilemapToCharMapDict.Add(chrmp.associatedTilemap, chrmp);
         }
+
     }
 
     private void OnEnable()
@@ -102,6 +149,8 @@ public class TilemapSerialization : MonoBehaviour
         // So, the tile's been placed onto the tilemap. But we need
         // to record this change in the charmap, which is exactly what
         // this method does.
-        tilemapToCharMapDict[tilemap].SetTileChar(tile, pos); 
+        if (tile == null) { tilemapToCharMapDict[tilemap].SetAir(pos); }
+
+        else { tilemapToCharMapDict[tilemap].SetTileChar(tile, pos); }
     }
 }

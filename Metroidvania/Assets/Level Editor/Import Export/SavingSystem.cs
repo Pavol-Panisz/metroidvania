@@ -7,6 +7,7 @@ using UnityEngine.Tilemaps;
 public class SavingSystem : MonoBehaviour
 {
     [SerializeField] private Entities entities;
+    [SerializeField] private TilemapSerialization charmaps;
 
     // debug
     public TextMeshProUGUI fileLoadResultText;
@@ -30,23 +31,33 @@ public class SavingSystem : MonoBehaviour
     {
         content = null; // you start completely anew
 
-        content += $"{entities.player.saveSystemId} {Vec3ToStr(entities.player.transform.position)}\n";
-        content += $"{entities.levelExit.saveSystemId} {Vec3ToStr(entities.levelExit.transform.position)}\n";
+        content += $"{entities.player.saveSystemId} {Vec3ToStr(entities.player.transform.position)}\n\n";
+        content += $"{entities.levelExit.saveSystemId} {Vec3ToStr(entities.levelExit.transform.position)}\n\n";
 
         void SaveList(List<EditorEntity> l)
         {
             if (l.Count == 0) return; // if no instances of this entity exist, skip it
 
-            content += $"{l[0].saveSystemId}\n";
-            foreach (var ee in l)
+            content += $"{l[0].saveSystemId}\n"; // "shooting_enemy"
+            foreach (var ee in l) // each line below is a position vector of 1 instance
             {
                 content += $"{Vec3ToStr(ee.transform.position)}\n";
             }
+            content += "\n";
         }
 
         SaveList(entities.checkpoints);
         SaveList(entities.walkingEnemies);
         SaveList(entities.shootingEnemies);
+
+        content += "\n";
+
+        foreach (var charmap in charmaps.tilemapRepresentations)
+        {
+            content += charmap.saveSystemLayerId + "\n";
+            content += charmap.GetCharmapString();
+            content += "\n";
+        }
 
         WebGLFileSaver.SaveFile(content, saveFileName);
     }

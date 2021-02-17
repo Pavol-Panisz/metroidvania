@@ -117,7 +117,7 @@ public class TilemapEditor : MonoBehaviour
             
 
             SetTile(tilePos, null);
-            
+            OnPlacedTile?.Invoke(null, currentTilemap, tilePos);
             // generated when entering play mode
             //if (currentCollider != null) currentCollider.GenerateGeometry();
         }
@@ -212,7 +212,7 @@ public class TilemapEditor : MonoBehaviour
 
     public Vector2Int GetTilemapSize()
     {
-        return new Vector2Int(upperRight.x - lowerLeft.x, upperRight.y - lowerLeft.y);
+        return new Vector2Int(upperRight.x - lowerLeft.x + 1, upperRight.y - lowerLeft.y + 1);
     }
 
     /// <summary>
