@@ -39,8 +39,7 @@ public class TilemapEditor : MonoBehaviour
 
     [Space]
     [Header("The currently selected tiles - just for show")]
-    public RuleTile ruleTile;
-    public Tile tile;
+    public TileBase activeTile;
     [Space]
     public Transform tilePlacementIndicator;
     private SpriteRenderer tilePlacementIndicatorSprite;
@@ -59,13 +58,22 @@ public class TilemapEditor : MonoBehaviour
     public class FromInstructionsBuilder
     {
         private int currentY = 0;
-        private TilemapSerialization.TileMapRepresentation charmap;
+        private TilemapSerialization tilemapSerialization;
         private TilemapEditor tilemapEditor;
+        
+        private TilemapSerialization.TileMapRepresentation charmap;
+        private Tilemap tilemap;
 
-        public FromInstructionsBuilder(string layerEnumStr, TilemapEditor tE)
+        public FromInstructionsBuilder(string layerEnumStr, TilemapEditor tE, TilemapSerialization tS)
         {
+
             tE.SetActiveLayer(layerEnumStr);
+            tilemapSerialization = tS;
             tilemapEditor = tE;
+
+
+            tilemap = tE.currentTilemap;
+            charmap = tS.tilemapToCharMapDict[tilemap]; 
         }
 
         public void BuildRowFromLine(string line)
@@ -73,9 +81,17 @@ public class TilemapEditor : MonoBehaviour
             line.Trim(); // remove any whitespace
             for (int xxx=0; xxx < line.Length; xxx++)
             {
-                //tilemapEditor.SetActiveTile()
+                char chr = line[xxx];
+                // if not placing the same tile that's already there or some error tile
+                char inCharmap = charmap.GetCharAt(xxx, currentY, TilemapSerialization.errorChar);
+                if ((inCharmap != chr) && (inCharmap != TilemapSerialization.errorChar)) {
 
-                // left off - replace the rule/ normal tile workflow with tilebase
+                    TileBase tile = tilemapSerialization.charToTileDict[chr];
+
+                    tilemapEditor.SetTile((Vector3Int)charmap.TilemapToCharmapCoords(new Vector3Int(xxx, currentY, 0)), tile);
+                } 
+
+               
             }
             currentY++;
         }
@@ -117,18 +133,18 @@ public class TilemapEditor : MonoBehaviour
         // placement
         if (Input.GetKey(KeyCode.Mouse0) && !CommonEditMode.isBeingInhibited)
         {
-            if (ruleTile != null)
+            if (activeTile != null)
             {
-                SetTile(tilePos, ruleTile);
+                SetTile(tilePos, activeTile);
 
                 // I realized at this point that all tiles inherit from TileBase. That's why
                 // up until now, I've been "differentiating" between ruleTiles & normal tiles :p
-                OnPlacedTile?.Invoke(ruleTile, currentTilemap, tilePos);
+                OnPlacedTile?.Invoke(activeTile, currentTilemap, tilePos);
             }
-            else if (tile != null)
+            else if (activeTile != null)
             {
-                SetTile(tilePos, tile);
-                OnPlacedTile?.Invoke(tile, currentTilemap, tilePos);
+                SetTile(tilePos, activeTile);
+                OnPlacedTile?.Invoke(activeTile, currentTilemap, tilePos);
             }
 
 
@@ -145,7 +161,7 @@ public class TilemapEditor : MonoBehaviour
             //if (currentCollider != null) currentCollider.GenerateGeometry();
         }
 
-        // LEFT OFF - tile placement & special rules when placing lava or ladders
+        // TODO tile placement & special rules when placing lava or ladders
         
 
         //mousePosLastF = Camera.main.ScreenToWorldPoint(Input.mousePosition);
@@ -190,17 +206,15 @@ public class TilemapEditor : MonoBehaviour
     }
 
     // Called by each tile icon
-    public void SetActiveTile(Tile tile)
+    public void SetActiveTile(Tile tile) // Two separate functions because previously, I differentiated between tiles. Not anymore.
     {
-        this.tile = tile;
-        this.ruleTile = null;
+        this.activeTile = tile;
         tilePlacementIndicatorSprite.sprite = tile.sprite;
     }
 
-    public void SetActiveRuleTile(RuleTile ruleTile)
+    public void SetActiveRuleTile(RuleTile ruleTile) // Two separate functions because previously, I differentiated between tiles. Not anymore.
     {
-        this.tile = null;
-        this.ruleTile = ruleTile;
+        this.activeTile = ruleTile;
         tilePlacementIndicatorSprite.sprite = ruleTile.m_DefaultSprite;
     }
 

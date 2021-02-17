@@ -12,6 +12,7 @@ public class TilemapSerialization : MonoBehaviour
     [SerializeField] private TilemapEditor tilemapEditor;
 
     public static char airChar = '.';
+    public static char errorChar = '_';
 
     [System.Serializable]
     private class TileRepresentation
@@ -21,8 +22,9 @@ public class TilemapSerialization : MonoBehaviour
     }
     [Tooltip("Used for creating a dictionary for looking up what char corresponds to a given tile")]
     [SerializeField] private List<TileRepresentation> tileRepresentations = new List<TileRepresentation>();
-    private Dictionary<TileBase, char> tileCharsDict = new Dictionary<TileBase, char>();
-
+    // used when serializing back and forth
+    public Dictionary<TileBase, char> tileToCharDict = new Dictionary<TileBase, char>();
+    public Dictionary<char, TileBase> charToTileDict = new Dictionary<char, TileBase>();
 
     [System.Serializable]
     public class TileMapRepresentation
@@ -77,6 +79,7 @@ public class TilemapSerialization : MonoBehaviour
             arr[arrPos.x][arrPos.y] = airChar;
         }
 
+        // kinda stupid that you input a vec3 and get a vec2 but whatever
         public Vector2Int TilemapToCharmapCoords(Vector3Int pos)
         {
             Vector2Int arrPos = new Vector2Int(0, 0);
@@ -113,12 +116,23 @@ public class TilemapSerialization : MonoBehaviour
             return content;
         }
 
+        public char GetCharAt(int x, int y, char errCase)
+        {
+            try
+            {
+                return arr[x][y];
+            } catch
+            {
+                return errCase;
+            }
+        }
+
     }
 
     // public, cause SavingSystem will go through each charmap to get its string into the save file
     public List<TileMapRepresentation> tilemapRepresentations =
                 new List<TileMapRepresentation>();
-    private Dictionary<Tilemap, TileMapRepresentation> tilemapToCharMapDict =
+    public Dictionary<Tilemap, TileMapRepresentation> tilemapToCharMapDict =
                 new Dictionary<Tilemap, TileMapRepresentation>();
 
     private void Awake()
@@ -130,15 +144,20 @@ public class TilemapSerialization : MonoBehaviour
             if (used.Contains(tr.chr))
             {
                 Debug.LogError($"More than 1 tile has the character '{tr.chr}' assigned! In: {tr.tile.name}");
+            } 
+            if (tr.chr == errorChar)
+            {
+                Debug.LogError($"You gave one of your tiles in the editor ({tr.chr}) a saveSystemChar that's considered the errorChar! Change it");
             }
-            tileCharsDict.Add(tr.tile, tr.chr);
+            tileToCharDict.Add(tr.tile, tr.chr);
+            charToTileDict.Add(tr.chr, tr.tile);
             used.Add(tr.chr);
         }
 
         // create the individual char maps and then the tilemap dict
         foreach (var chrmp in tilemapRepresentations)
         {
-            chrmp.Initialize(tilemapEditor, tileCharsDict);
+            chrmp.Initialize(tilemapEditor, tileToCharDict);
             tilemapToCharMapDict.Add(chrmp.associatedTilemap, chrmp);
         }
 

@@ -1,29 +1,33 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class Importer : MonoBehaviour
 {
     [Tooltip("In case the parsing of a vector 3 goes wrong, default to this value")]
     [SerializeField] private Vector3 errVec = Vector3.one;
 
-    [SerializeField] private TilemapSerialization charmaps;
+    [SerializeField] private TilemapSerialization tilemapSerialization;
     [SerializeField] private TilemapEditor tilemapEditor;
     [SerializeField] private Entities entities;
 
     [SerializeField] private TextAsset sampleLevel;
+
+    public ScreenFader screenFader;
 
     private string currentMassPlacedEntity = null;
 
     TilemapEditor.FromInstructionsBuilder tilemapBuilder = null;
     private bool startedEditingTilemap = false; // no need to save this. the tilemapeditor takes care of the rest ;)
 
+
     private void Start()
     {
-        Import(sampleLevel.text);
+        Import(sampleLevel.text, () => screenFader.FadeOut());
     }
 
-    public void Import(string content)
+    public void Import(string content, Action OnCompletedImport = null)
     {
         // destroy all entites except player and level_exit
         foreach (var e in entities.shootingEnemies) entities.Destroy(e);
@@ -35,12 +39,23 @@ public class Importer : MonoBehaviour
         {
             string line = lines[iii].Trim('\n', '\r');
 
-            if (line == "" || line.StartsWith(SavingSystem.saveFileCommentStr)) continue; 
+            if (line == "" || line.StartsWith(SavingSystem.saveFileCommentStr)) continue;
+
+            // need to check this before trying to build the row! Otherwise it'll think this is also an instruction
+            else if (IsATilemapLayerId(line) != null) 
+            {
+                string layerEnumStr = tilemapSerialization.GetLayerEnumStrFromSaveSysId(line);
+
+                // from now on, all instructions on tile placement are for this layer
+                tilemapBuilder = new TilemapEditor.FromInstructionsBuilder(layerEnumStr, tilemapEditor, tilemapSerialization);
+                startedEditingTilemap = true;
+            }
 
             else if (startedEditingTilemap)
             {
-
+                tilemapBuilder.BuildRowFromLine(line);
             }
+
             else if (line == entities.player.saveSystemId)
             {
                 entities.player.transform.position = ParseVec3(lines[iii + 1], errVec);
@@ -74,17 +89,12 @@ public class Importer : MonoBehaviour
                     entity.transform.position = ParseVec3(line, errVec);
                     entity.UpdateTransform();
                 }
+            }
 
-                // LEFT OFF
-            }
-            else if (IsATilemapLayerId(line) != null)
-            {
-                // from now on, all instructions on tile placement are for this layer
-                tilemapBuilder = new TilemapEditor.FromInstructionsBuilder(charmaps.GetLayerEnumStrFromSaveSysId(line), tilemapEditor);
-                startedEditingTilemap = true;
-            }
+
         }
         tilemapEditor.SetActiveLayer("Foreground"); // don't leave it at the damage layer, that's not user-friendly
+        OnCompletedImport?.Invoke();
     }
 
     public Vector3 ParseVec3(string str, Vector3 errorCase)
@@ -107,9 +117,9 @@ public class Importer : MonoBehaviour
 
     public string IsATilemapLayerId(string line)
     {
-        for (int jjj = 0; jjj < charmaps.tilemapRepresentations.Count; jjj++)
+        for (int jjj = 0; jjj < tilemapSerialization.tilemapRepresentations.Count; jjj++)
         {
-            if (charmaps.tilemapRepresentations[jjj].saveSystemLayerId == line)
+            if (tilemapSerialization.tilemapRepresentations[jjj].saveSystemLayerId == line)
             {
                 return line;
             }

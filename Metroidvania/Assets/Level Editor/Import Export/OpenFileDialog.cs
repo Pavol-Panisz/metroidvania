@@ -10,6 +10,8 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
 
     public Importer importer;
 
+    public ScreenFader screenFader;
+
     public void OnPointerDown(PointerEventData eventData)
     {
         FocusFileUploader();
@@ -26,6 +28,15 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
         yield return www;
         string contentOfFile = www.text;
 
-        importer.Import(contentOfFile);
+        screenFader.FadeIn();
+
+        yield return new WaitForSeconds(1f);
+
+        Debug.Log(contentOfFile);
+
+        // export what you imported right away for debug
+        //WebGLFileSaver.SaveFile(contentOfFile, "content_from_import.metlvl");
+        
+        importer.Import(contentOfFile, () => screenFader.FadeOut());
     }
 }

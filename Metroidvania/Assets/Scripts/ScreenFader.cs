@@ -6,8 +6,8 @@ using UnityEngine.UI;
 public class ScreenFader : MonoBehaviour
 {
     //cached components
-    private Animator anim;
-    private Image img;
+    public Animator anim;
+    public Image img;
 
     private void Start() {
         img = GetComponent<Image>();

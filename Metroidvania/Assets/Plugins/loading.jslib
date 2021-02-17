@@ -16,7 +16,7 @@ mergeInto(
           fileuploader.onchange = function (e) {
             var files = e.target.files;
             for (var i = 0, f; f = files[i]; i++) {
-              //window.alert(URL.createObjectURL(f));
+              window.alert("Opening file from URL: ".concat(URL.createObjectURL(f)));
               SendMessage('Import Btn', 'FileDialogResult', URL.createObjectURL(f));
             }
           };
