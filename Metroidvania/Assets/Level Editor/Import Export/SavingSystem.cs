@@ -9,22 +9,13 @@ public class SavingSystem : MonoBehaviour
     [SerializeField] private Entities entities;
     [SerializeField] private TilemapSerialization charmaps;
 
-    // debug
-    public TextMeshProUGUI fileLoadResultText;
-
     string content = null;
 
-    private string saveFileName = "save.metlev";
+    private string saveFileName = "save.metlvl";
 
     void Start()
     {
         
-    }
-
-    // debug - called when the file dialogue's file gets read
-    public void DisplayFileContent(string str)
-    {
-        fileLoadResultText.text = str;
     }
 
     public void Export()
@@ -61,6 +52,7 @@ public class SavingSystem : MonoBehaviour
 
         WebGLFileSaver.SaveFile(content, saveFileName);
     }
+
 
     private string Vec3ToStr(Vector3 v) // cause Vector3.ToString() is too unprecise
     {

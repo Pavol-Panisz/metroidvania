@@ -11,6 +11,10 @@ public class EntityPlacement : MonoBehaviour
     private static EntityPlacement beingMousedOver = null;
     private bool wasMousedOverLastF = false;
 
+    // constraints, between which this entity's coords will get clamped
+    private Vector2 lowerLeft;
+    private Vector2 upperRight;
+
     public Action OnDropped;
 
     // the x and y size of the sprite in world space, not accounting for 
@@ -62,6 +66,11 @@ public class EntityPlacement : MonoBehaviour
         {
             Vector3 deltaPos = mousePos - mousePosLastF;
             transform.position += new Vector3(deltaPos.x, deltaPos.y, 0f);
+
+            var clamped = new Vector3(Mathf.Clamp(transform.position.x, lowerLeft.x, upperRight.x),
+                                      Mathf.Clamp(transform.position.y, lowerLeft.y, upperRight.y),
+                                      0f);
+            transform.position = clamped;
         }
 
         // color change
@@ -106,5 +115,11 @@ public class EntityPlacement : MonoBehaviour
         Vector2 scaledSpriteWorldSize = Vector2.Scale(unscaledSpriteWorldSize, transform.lossyScale);
         Vector2 lowerLeftSpriteWorldCorner = (Vector2)transform.position - (scaledSpriteWorldSize * 0.5f);
         return new Rect(lowerLeftSpriteWorldCorner, scaledSpriteWorldSize);
+    }
+
+    public void SetConstraints(Vector2Int ll, Vector2Int ur)
+    {
+        lowerLeft = (Vector2)ll;
+        upperRight = (Vector2)ur;
     }
 }

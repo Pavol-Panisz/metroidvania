@@ -10,6 +10,10 @@ using System;
  */
 public class Entities : MonoBehaviour
 {
+    [Tooltip("So that we know the tilemap constraints, which we'll about to each editor entity, so " 
+            + "they can't get outside the tilemap")]
+    [SerializeField] TilemapEditor tilemapEditor;
+
     [SerializeField] private EntityTrashCan entityTrashCan;
     [Space]
     [SerializeField] private LevelControl levelControl;
@@ -32,6 +36,7 @@ public class Entities : MonoBehaviour
     }
     [Tooltip("A dictionary holding all instantiable entites")]
     [SerializeField] private List<EntityInstance> instantiablesDict;
+    public Dictionary<string, EditorEntity> strToEEDict = new Dictionary<string, EditorEntity>();
 
     private void OnEnable()
     {
@@ -42,10 +47,21 @@ public class Entities : MonoBehaviour
         levelControl.OnSwitchedModeTo -= OnSwitchedMode;
     }
 
+    private void Awake()
+    {
+        foreach (var e in instantiablesDict)
+        {
+            strToEEDict.Add(e.type, e.prefab.GetComponent<EditorEntity>());
+        }
+    }
+
     // DEBUG - this should be called in when drag n dropping an entity
     private void Start()
     {
         //foreach (var e in shootingEnemies) e.UpdateTransform();
+        player.entityPlacement.SetConstraints(tilemapEditor.lowerLeft, tilemapEditor.upperRight);
+        levelExit.entityPlacement.SetConstraints(tilemapEditor.lowerLeft, tilemapEditor.upperRight);
+    
     }
 
     private void OnSwitchedMode(LevelControl.Modes m)
@@ -69,20 +85,30 @@ public class Entities : MonoBehaviour
         }
     }
 
+    
+    // called when drag n dropping. the name is deprecated but too lazy to change it
     public void CreateNewInstance(string strType)
+    {
+        EditorEntity instance = CreateAndAdd(strType);
+        instance.entityPlacement.StartBeingHeld();
+    }
+
+    public EditorEntity CreateAndAdd(string strType)
     {
         EditorEntity instance = null;
 
-        foreach (EntityInstance instantiable in instantiablesDict) {
+        foreach (EntityInstance instantiable in instantiablesDict)
+        {
             if (instantiable.type == strType)
             {
                 instance = Instantiate(instantiable.prefab) as EditorEntity;
                 instance.transform.SetParent(instantiable.entityCollectionParent);
             }
         }
-        if (instance == null) {
+        if (instance == null)
+        {
             Debug.LogError($"Didn't find type '{strType}' in the instantiablesDict");
-            return;
+            return null;
         }
 
         switch (strType)
@@ -97,13 +123,15 @@ public class Entities : MonoBehaviour
                 checkpoints.Add(instance);
                 break;
             default:
-                Debug.LogError($"Unhandled strType {strType}");
-                break;
+                Debug.LogWarning($"Unhandled strType {strType}");
+                return null;
         }
 
-        instance.entityPlacement.StartBeingHeld();
+        instance.entityPlacement.SetConstraints(tilemapEditor.lowerLeft, tilemapEditor.upperRight);
         instance.entityPlacement.OnDropped += entityTrashCan.CheckDestroy;
         instance.OnEnterEditMode(); // turn it's brain off immediately
+
+        return instance;
     }
 
     public void Destroy(EditorEntity ee)

@@ -145,4 +145,5 @@ public class ShootingEnemyEE : EditorEntity
         bodyRenderer.sprite = ogBodySprite;
         shootingEnemy.currentDamageSpIndex = -1;
     }
+
 }

@@ -59,4 +59,5 @@ public class PlayerEE : EditorEntity
         ogRotation = transform.rotation;
         playerManager.SetRespawnPoint(new Vector2(transform.position.x, transform.position.y));
     }
+
 }

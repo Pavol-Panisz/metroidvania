@@ -8,8 +8,7 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
 {
     [DllImport("__Internal")] private static extern void FocusFileUploader();
 
-    public SavingSystem savingSystem;
-    public TextMeshProUGUI urlDisplayText;
+    public Importer importer;
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -18,7 +17,6 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
 
     public void FileDialogResult(string fileUrl)
     {
-        if (urlDisplayText != null) { urlDisplayText.text = fileUrl; }
         StartCoroutine(PreviewCoroutine(fileUrl));
     }
 
@@ -28,6 +26,6 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
         yield return www;
         string contentOfFile = www.text;
 
-        savingSystem.DisplayFileContent(contentOfFile);
+        importer.Import(contentOfFile);
     }
 }
