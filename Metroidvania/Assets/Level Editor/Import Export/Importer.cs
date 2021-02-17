@@ -24,10 +24,12 @@ public class Importer : MonoBehaviour
 
     private void Start()
     {
-        Import(sampleLevel.text, () => screenFader.FadeOut());
+        //Import(sampleLevel.text);
+
+        StartCoroutine(Corot());
     }
 
-    public void Import(string content, Action OnCompletedImport = null)
+    public void Import(string content)
     {
         // destroy all entites except player and level_exit
         foreach (var e in entities.shootingEnemies) entities.Destroy(e);
@@ -37,12 +39,13 @@ public class Importer : MonoBehaviour
         string[] lines = content.Split('\n');
         for (int iii=0; iii < lines.Length; iii++)
         {
+
             string line = lines[iii].Trim('\n', '\r');
 
             if (line == "" || line.StartsWith(SavingSystem.saveFileCommentStr)) continue;
 
             // need to check this before trying to build the row! Otherwise it'll think this is also an instruction
-            else if (IsATilemapLayerId(line) != null) 
+            else if (IsATilemapLayerId(line) != null)
             {
                 string layerEnumStr = tilemapSerialization.GetLayerEnumStrFromSaveSysId(line);
 
@@ -94,7 +97,6 @@ public class Importer : MonoBehaviour
 
         }
         tilemapEditor.SetActiveLayer("Foreground"); // don't leave it at the damage layer, that's not user-friendly
-        OnCompletedImport?.Invoke();
     }
 
     public Vector3 ParseVec3(string str, Vector3 errorCase)
@@ -125,5 +127,11 @@ public class Importer : MonoBehaviour
             }
         }
         return null;
+    }
+
+    private IEnumerator Corot()
+    {
+        yield return new WaitForEndOfFrame();
+        Import(sampleLevel.text);
     }
 }

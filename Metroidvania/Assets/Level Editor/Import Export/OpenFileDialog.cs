@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine;
 using TMPro;
 using System.Runtime.InteropServices;
+using System;
 
 public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
 {
@@ -28,8 +29,6 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
         yield return www;
         string contentOfFile = www.text;
 
-        screenFader.FadeIn();
-
         yield return new WaitForSeconds(1f);
 
         Debug.Log(contentOfFile);
@@ -37,6 +36,12 @@ public class OpenFileDialog : MonoBehaviour, IPointerDownHandler
         // export what you imported right away for debug
         //WebGLFileSaver.SaveFile(contentOfFile, "content_from_import.metlvl");
         
-        importer.Import(contentOfFile, () => screenFader.FadeOut());
+        try
+        {
+            importer.Import(contentOfFile);
+        }
+        catch (Exception e) {
+            Debug.Log("exception: " + e.Message);
+        }
     }
 }
