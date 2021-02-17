@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 2217587712402761255}
   - component: {fileID: 2217587712402761254}
   - component: {fileID: 2217587712402761249}
-  - component: {fileID: 280935713117880047}
+  - component: {fileID: 4778568558151883509}
   m_Layer: 5
   m_Name: Tile UI Button
   m_TagString: Untagged
@@ -172,7 +172,7 @@ MonoBehaviour:
   selectionImage: {fileID: 2217587712402761254}
   clickMustFinishInside: 1
   isSelected: 0
---- !u!114 &280935713117880047
+--- !u!114 &4778568558151883509
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

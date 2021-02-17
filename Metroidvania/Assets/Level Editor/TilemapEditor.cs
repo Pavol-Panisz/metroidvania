@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
+using System;
 
 public class TilemapEditor : MonoBehaviour
 {
@@ -53,6 +54,10 @@ public class TilemapEditor : MonoBehaviour
     [SerializeField] private Image backgroundSelectedIndicator;
     [SerializeField] private Image damageSelectedIndicator;
 
+    public Action<TileBase, Tilemap, Vector3Int> OnPlacedTile;
+
+
+
     private void Awake()
     {
         tilePlacementIndicatorSprite = tilePlacementIndicator.GetComponent<SpriteRenderer>();
@@ -89,8 +94,20 @@ public class TilemapEditor : MonoBehaviour
         // placement
         if (Input.GetKey(KeyCode.Mouse0) && !CommonEditMode.isBeingInhibited)
         {
-            if (ruleTile != null) currentTilemap.SetTile(tilePos, ruleTile);
-            else if (tile != null) currentTilemap.SetTile(tilePos, tile);
+            if (ruleTile != null)
+            {
+                SetTile(tilePos, ruleTile);
+
+                // I realized at this point that all tiles inherit from TileBase. That's why
+                // up until now, I've been "differentiating" between ruleTiles & normal tiles :p
+                OnPlacedTile?.Invoke(ruleTile, currentTilemap, tilePos);
+            }
+            else if (tile != null)
+            {
+                SetTile(tilePos, tile);
+                OnPlacedTile?.Invoke(tile, currentTilemap, tilePos);
+            }
+
 
             if (currentCollider != null) currentCollider.GenerateGeometry();
         }
@@ -99,8 +116,10 @@ public class TilemapEditor : MonoBehaviour
         {
             
 
-            currentTilemap.SetTile(tilePos, null);
-            if (currentCollider != null) currentCollider.GenerateGeometry();
+            SetTile(tilePos, null);
+            
+            // generated when entering play mode
+            //if (currentCollider != null) currentCollider.GenerateGeometry();
         }
 
         // LEFT OFF - tile placement & special rules when placing lava or ladders
@@ -135,8 +154,8 @@ public class TilemapEditor : MonoBehaviour
         else if (str == "Damage")
         {
             activeLayer = Layers.Damage;
-            currentCollider = lavaCol;
-            currentTilemap = lavaTilemap;
+            currentCollider = damageCol;
+            currentTilemap = damageTilemap;
 
             foregroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
             backgroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
@@ -171,7 +190,12 @@ public class TilemapEditor : MonoBehaviour
         else if (mode == LevelControl.Modes.Play)
         {
             isInEditMode = false;
-        }   
+
+        foregroundCol.GenerateGeometry();
+        ladderCol.GenerateGeometry();
+        damageCol.GenerateGeometry();
+        lavaCol.GenerateGeometry();
+}   
     }
 
     private void OnSwitchedEditingAction(CommonEditMode.EditingActions action)
@@ -184,5 +208,18 @@ public class TilemapEditor : MonoBehaviour
         {
             isEditingTilemap = true;
         }
+    }
+
+    public Vector2Int GetTilemapSize()
+    {
+        return new Vector2Int(upperRight.x - lowerLeft.x, upperRight.y - lowerLeft.y);
+    }
+
+    /// <summary>
+    /// Handles all logic for placing tiles, such as overrides for lava and ladders.
+    /// </summary>
+    private void SetTile(Vector3Int tilePos, TileBase tile) 
+    {
+        currentTilemap.SetTile(tilePos, tile);
     }
 }

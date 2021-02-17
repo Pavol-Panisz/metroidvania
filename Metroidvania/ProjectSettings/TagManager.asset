@@ -30,7 +30,7 @@ TagManager:
   - EnemyReceivesDmg
   - AllReceiveDmg
   - Bullets
-  - 
+  - GroundAndPlayerReceivesDmg
   - 
   - 
   - 
