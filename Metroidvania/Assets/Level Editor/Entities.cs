@@ -16,7 +16,7 @@ public class Entities : MonoBehaviour
 
     [SerializeField] private EntityTrashCan entityTrashCan;
     [Space]
-    [SerializeField] private LevelControl levelControl;
+    [SerializeField] private LevelControl levelControl; 
     public EditorEntity player;
     public EditorEntity levelExit;
     [Space]
@@ -29,6 +29,7 @@ public class Entities : MonoBehaviour
     
         [Tooltip("Shooting_Enemy, Walking_Enemy, Checkpoint")]
         public string type;
+        public string saveSystemId;
         public EditorEntity prefab;
 
         [Tooltip("The gameobject, to which all instances of this prefab will be parented")]
@@ -51,7 +52,10 @@ public class Entities : MonoBehaviour
     {
         foreach (var e in instantiablesDict)
         {
-            strToEEDict.Add(e.type, e.prefab.GetComponent<EditorEntity>());
+            var editorEntity = e.prefab.GetComponent<EditorEntity>();
+            editorEntity.saveSystemId = e.saveSystemId; // copies the value from inspector
+            strToEEDict.Add(e.type, editorEntity);
+            
         }
     }
 

@@ -19,7 +19,7 @@ public class WalkingEE : EditorEntity
 
     private void Awake()
     {
-        saveSystemId = "walking_enemy";
+        //saveSystemId = "walking_enemy";
     }
 
     private void OnEnable()

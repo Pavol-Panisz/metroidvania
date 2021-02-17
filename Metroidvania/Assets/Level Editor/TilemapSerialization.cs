@@ -28,6 +28,8 @@ public class TilemapSerialization : MonoBehaviour
     public class TileMapRepresentation
     {
         public Tilemap associatedTilemap;
+        [Tooltip("The mapping from the layer string to TilemapEditor.Layer, as seen in TilemapEditor.SetActiveLayer(string)")]
+        public string tilemapLayerStr;
         public string saveSystemLayerId;
         private char[][] arr;
 
@@ -82,6 +84,15 @@ public class TilemapSerialization : MonoBehaviour
             arrPos.y = size.y - pos.y;
 
             return arrPos;
+        }
+
+        public Vector2Int CharmapToTilemapCoords(Vector2Int pos)
+        {
+            Vector2Int chrArrPos = new Vector2Int(0, 0);
+            chrArrPos.x = pos.x + 1;
+            chrArrPos.y = -pos.y + size.y;
+
+            return chrArrPos;
         }
 
         public string GetCharmapString()
@@ -152,5 +163,21 @@ public class TilemapSerialization : MonoBehaviour
         if (tile == null) { tilemapToCharMapDict[tilemap].SetAir(pos); }
 
         else { tilemapToCharMapDict[tilemap].SetTileChar(tile, pos); }
+    }
+
+    /// <summary>
+    /// Gets the corresponding layer-enum-string (the mapping in TilemapEditor.SetActiveLayer()) from the save system id.
+    /// Is an O(n) operation.
+    /// </summary>
+    public string GetLayerEnumStrFromSaveSysId(string ssid)
+    {
+        foreach (var charmap in tilemapRepresentations)
+        {
+            if (charmap.saveSystemLayerId == ssid)
+            {
+                return charmap.tilemapLayerStr;
+            }
+        }
+        return null;
     }
 }

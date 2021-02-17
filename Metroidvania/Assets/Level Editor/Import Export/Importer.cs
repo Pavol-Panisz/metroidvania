@@ -11,7 +11,17 @@ public class Importer : MonoBehaviour
     [SerializeField] private TilemapEditor tilemapEditor;
     [SerializeField] private Entities entities;
 
+    [SerializeField] private TextAsset sampleLevel;
+
     private string currentMassPlacedEntity = null;
+
+    TilemapEditor.FromInstructionsBuilder tilemapBuilder = null;
+    private bool startedEditingTilemap = false; // no need to save this. the tilemapeditor takes care of the rest ;)
+
+    private void Start()
+    {
+        Import(sampleLevel.text);
+    }
 
     public void Import(string content)
     {
@@ -23,10 +33,17 @@ public class Importer : MonoBehaviour
         string[] lines = content.Split('\n');
         for (int iii=0; iii < lines.Length; iii++)
         {
-            string line = lines[iii].Trim('\n');
+            string line = lines[iii].Trim('\n', '\r');
 
-            if (line == entities.player.saveSystemId) {
-                entities.player.transform.position = ParseVec3(lines[iii + 1], errVec); // next line's the coords
+            if (line == "" || line.StartsWith(SavingSystem.saveFileCommentStr)) continue; 
+
+            else if (startedEditingTilemap)
+            {
+
+            }
+            else if (line == entities.player.saveSystemId)
+            {
+                entities.player.transform.position = ParseVec3(lines[iii + 1], errVec);
                 iii++; // skip next line
                 entities.player.UpdateTransform();
             }
@@ -36,7 +53,8 @@ public class Importer : MonoBehaviour
                 iii++; // skip next line
                 entities.levelExit.UpdateTransform();
             }
-            else if (line == entities.strToEEDict["Shooting_Enemy"].saveSystemId) {
+            else if (line == entities.strToEEDict["Shooting_Enemy"].saveSystemId)
+            {
                 currentMassPlacedEntity = "Shooting_Enemy"; // map directly to the switch statement in Entites
             }
             else if (line == entities.strToEEDict["Walking_Enemy"].saveSystemId)
@@ -48,22 +66,30 @@ public class Importer : MonoBehaviour
                 currentMassPlacedEntity = "Checkpoint"; // map directly to the switch statement in Entites
             }
             // if this line is a valid vector & currently mass-placing something
-            else if (ParseVec3(line, errVec) != errVec && currentMassPlacedEntity != null) { 
-                var entity = entities.CreateAndAdd(currentMassPlacedEntity); 
-                if (entity != null) {
+            else if (ParseVec3(line, errVec) != errVec && currentMassPlacedEntity != null)
+            {
+                var entity = entities.CreateAndAdd(currentMassPlacedEntity);
+                if (entity != null)
+                {
                     entity.transform.position = ParseVec3(line, errVec);
                     entity.UpdateTransform();
                 }
 
                 // LEFT OFF
             }
-
+            else if (IsATilemapLayerId(line) != null)
+            {
+                // from now on, all instructions on tile placement are for this layer
+                tilemapBuilder = new TilemapEditor.FromInstructionsBuilder(charmaps.GetLayerEnumStrFromSaveSysId(line), tilemapEditor);
+                startedEditingTilemap = true;
+            }
         }
+        tilemapEditor.SetActiveLayer("Foreground"); // don't leave it at the damage layer, that's not user-friendly
     }
 
     public Vector3 ParseVec3(string str, Vector3 errorCase)
     {
-        str.Trim('\n');
+        str.Trim('\n', '\r');
         string[] strFloats = str.Split(' ');
         Vector3 v = errorCase;
 
@@ -79,5 +105,15 @@ public class Importer : MonoBehaviour
         return v;
     }
 
-
+    public string IsATilemapLayerId(string line)
+    {
+        for (int jjj = 0; jjj < charmaps.tilemapRepresentations.Count; jjj++)
+        {
+            if (charmaps.tilemapRepresentations[jjj].saveSystemLayerId == line)
+            {
+                return line;
+            }
+        }
+        return null;
+    }
 }

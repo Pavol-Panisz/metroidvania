@@ -12,6 +12,7 @@ public class SavingSystem : MonoBehaviour
     string content = null;
 
     private string saveFileName = "save.metlvl";
+    public static string saveFileCommentStr = "#";
 
     void Start()
     {
@@ -22,8 +23,8 @@ public class SavingSystem : MonoBehaviour
     {
         content = null; // you start completely anew
 
-        content += $"{entities.player.saveSystemId} {Vec3ToStr(entities.player.transform.position)}\n\n";
-        content += $"{entities.levelExit.saveSystemId} {Vec3ToStr(entities.levelExit.transform.position)}\n\n";
+        content += $"{entities.player.saveSystemId}\n{Vec3ToStr(entities.player.transform.position)}\n\n";
+        content += $"{entities.levelExit.saveSystemId}\n{Vec3ToStr(entities.levelExit.transform.position)}\n\n";
 
         void SaveList(List<EditorEntity> l)
         {

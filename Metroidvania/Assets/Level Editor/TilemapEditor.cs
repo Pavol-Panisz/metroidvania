@@ -56,7 +56,30 @@ public class TilemapEditor : MonoBehaviour
 
     public Action<TileBase, Tilemap, Vector3Int> OnPlacedTile;
 
+    public class FromInstructionsBuilder
+    {
+        private int currentY = 0;
+        private TilemapSerialization.TileMapRepresentation charmap;
+        private TilemapEditor tilemapEditor;
 
+        public FromInstructionsBuilder(string layerEnumStr, TilemapEditor tE)
+        {
+            tE.SetActiveLayer(layerEnumStr);
+            tilemapEditor = tE;
+        }
+
+        public void BuildRowFromLine(string line)
+        {
+            line.Trim(); // remove any whitespace
+            for (int xxx=0; xxx < line.Length; xxx++)
+            {
+                //tilemapEditor.SetActiveTile()
+
+                // left off - replace the rule/ normal tile workflow with tilebase
+            }
+            currentY++;
+        }
+    }
 
     private void Awake()
     {

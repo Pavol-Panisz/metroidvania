@@ -8,7 +8,7 @@ public class LevelExitEE : EditorEntity
 
     private void Awake()
     {
-        saveSystemId = "level_exit";
+        saveSystemId = "level_exit"; // unlike shooting enemy and co., I haven't implemented setting the saveSysId from the editor here
     }
     private void OnEnable()
     {

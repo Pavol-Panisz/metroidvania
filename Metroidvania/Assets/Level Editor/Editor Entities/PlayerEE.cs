@@ -17,7 +17,7 @@ public class PlayerEE : EditorEntity
 
     private void Awake()
     {
-        saveSystemId = "player";
+        saveSystemId = "player"; // unlike shooting enemy and co., I haven't implemented setting the saveSysId from the editor here
     }
 
     private void Start()

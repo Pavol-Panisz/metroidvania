@@ -1,6 +1,8 @@
-player 50.5 47.06 0
+player
+50.5 47.06 0
 
-level_exit 70.46642 46.98596 0
+level_exit
+70.46642 46.98596 0
 
 checkpoint
 55.07669 45.96254 0

@@ -19,7 +19,7 @@ public class CheckpointEE : EditorEntity
 
     private void Awake()
     {
-        saveSystemId = "checkpoint";
+        //saveSystemId = "checkpoint";
     }
 
     private void Start() // called only once, when a new instance gets created
