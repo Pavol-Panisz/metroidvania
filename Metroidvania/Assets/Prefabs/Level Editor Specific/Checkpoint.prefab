@@ -474,11 +474,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityPlacement: {fileID: 8134631950176005998}
+  saveSystemId: checkpoint
   checkpointLE: {fileID: 568733559774883484}
   priorityDisplayText: {fileID: 5514996675977168040}
   priorityDisplay: {fileID: 4327926378936426897}
   priorityDisplayWorldTransform: {fileID: 8568563100194595549}
-  priorityDisplayOffset: {x: 2.2, y: 230, z: 0}
   priorityTextSize: 80
   enabledOnlyInPlayModeAlive:
   - {fileID: 6445636708156401257}

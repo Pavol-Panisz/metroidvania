@@ -8,13 +8,17 @@ public class EntityPlacement : MonoBehaviour
     private Vector3 mousePosLastF;
 
     public static EntityPlacement beingHeld = null;
-    private static EntityPlacement beingMousedOver = null;
+    public static bool beingMousedOverAnyThisIteration = false; 
+
     private bool wasMousedOverLastF = false;
+
+    private static int mousedOverCount = 0;
 
     // constraints, between which this entity's coords will get clamped
     private Vector2 lowerLeft;
     private Vector2 upperRight;
 
+    public Action OnStartedBeingHeld;
     public Action OnDropped;
 
     // the x and y size of the sprite in world space, not accounting for 
@@ -44,7 +48,6 @@ public class EntityPlacement : MonoBehaviour
     private void OnEnable()
     {
         beingHeld = null;
-        beingMousedOver = null;
         wasMousedOverLastF = false;
     }
 
@@ -58,6 +61,13 @@ public class EntityPlacement : MonoBehaviour
         {
             isMousedOver = true;
             if (Input.GetKeyDown(KeyCode.Mouse0) && beingHeld == null) StartBeingHeld();
+
+            // EXTREMELY HACKY:
+            // gets reset in tilemap editor, but only once all entity placement updates have finished.
+            // the way this works is that all EntityPlacement.Updates execute before TilemapEditor.Update,
+            // cause I set it so in the script execution order.
+            // TilemapEditor, once that it's finished with beingMousedOverAnyThisIteration, sets it to false.
+            beingMousedOverAnyThisIteration = true; 
         }
 
         if (Input.GetKeyUp(KeyCode.Mouse0)) StopBeingHeld();
@@ -71,6 +81,8 @@ public class EntityPlacement : MonoBehaviour
                                       Mathf.Clamp(transform.position.y, lowerLeft.y, upperRight.y),
                                       0f);
             transform.position = clamped;
+
+            beingMousedOverAnyThisIteration = true;
         }
 
         // color change
@@ -85,6 +97,8 @@ public class EntityPlacement : MonoBehaviour
     {
         if (beingHeld != null) { beingHeld.Drop(); }
         beingHeld = this;
+
+        OnStartedBeingHeld?.Invoke();
     }
 
     private void StopBeingHeld()
@@ -93,6 +107,7 @@ public class EntityPlacement : MonoBehaviour
         beingHeld = null;
     }
 
+
     private void Drop()
     {
         OnDropped?.Invoke();
@@ -100,12 +115,12 @@ public class EntityPlacement : MonoBehaviour
 
     private void OnMouseEnter()
     {
-
+        mousedOverCount++;
     }
 
     private void OnMouseExit()
     {
-
+        mousedOverCount--;
     }
 
     private Rect CalculateSpriteWorldRect()
@@ -121,5 +136,10 @@ public class EntityPlacement : MonoBehaviour
     {
         lowerLeft = (Vector2)ll;
         upperRight = (Vector2)ur;
+    }
+
+    public void OnDestroy()
+    {
+        
     }
 }

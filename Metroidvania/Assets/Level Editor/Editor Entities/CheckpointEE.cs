@@ -79,20 +79,23 @@ public class CheckpointEE : EditorEntity
     public override void OnDestroyThis()
     {
         bool found = false;
+        bool wasAtLastIndex = false;
 
         // Since the priorityDisplay is parented to Non UI Bound Parent,
         // we must explicitly destroy it.
-        Destroy(priorityDisplay.gameObject);
+        if (priorityDisplay != null) Destroy(priorityDisplay.gameObject);
 
         // find this instance in the static list
         for (int iii=0; iii < checkpoints.Count; iii++)
         {
             if (checkpoints[iii].Equals(this))
             {
+                if (iii == checkpoints.Count - 1) wasAtLastIndex = true;
+
                 checkpoints.RemoveAt(iii);
                 found = true;
             }
-            if (found && checkpoints.Count != 0) // true for all checkpointLEs after the one which got removed
+            if (found && checkpoints.Count != 0 && !wasAtLastIndex) // true for all checkpointLEs after the one which got removed
             {
                 // just update its priority
                 checkpoints[iii].checkpointLE.priority -= 1;

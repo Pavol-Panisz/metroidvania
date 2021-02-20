@@ -7,12 +7,13 @@ public class EditorActionInihibitor : MonoBehaviour, IPointerEnterHandler, IPoin
     public void OnPointerEnter(PointerEventData data)
     {
         CommonEditMode.inhibitingCount += 1; // another one inhibits
-        //Debug.Log(transform.name + " after += 1 : " + CommonEditMode.inhibitingCount);
+        Debug.Log(transform.name + " after += 1 : " + CommonEditMode.inhibitingCount);
     }
 
     public void OnPointerExit(PointerEventData data)
     {
         CommonEditMode.inhibitingCount -= 1;
-        //Debug.Log(transform.name + " after -= 1 : " + CommonEditMode.inhibitingCount);
+        if (CommonEditMode.inhibitingCount < 0) CommonEditMode.inhibitingCount = 0;
+        Debug.Log(transform.name + " after -= 1 : " + CommonEditMode.inhibitingCount);
     }
 }

@@ -129,6 +129,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nextScene: 1 Main Menu
+  switchesScene: 1
+  OnEnterNoSwitch:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!61 &7557037326920865536
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -168,6 +172,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityPlacement: {fileID: 1684158857128051295}
+  saveSystemId: name_not_set
   editorSpriteRenderer: {fileID: 1684158857088056810}
 --- !u!114 &1684158857128051295
 MonoBehaviour:

@@ -41,3 +41,13 @@ mergeInto(
     }
   }
 );
+
+mergeInto(LibraryManager.library, {
+ 
+ 
+  PasteHereWindow: function (sometext) {
+	var pastedtext= prompt("Please copy+paste the content of a level.txt file here:", "");
+	SendMessage("Import Btn", "ImportFromPasted", pastedtext);
+  },
+ 
+});

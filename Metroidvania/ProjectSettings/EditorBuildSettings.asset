@@ -6,21 +6,21 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Level_Editor.unity
-    guid: ea7d3087fb7e8ea48ac8f3610350c7e4
-  - enabled: 0
     path: Assets/Scenes/Game Levels/1 Main Menu.unity
     guid: 07758f7ebaf8a1d46ab0be8accf4901e
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game Levels/2 Intro.unity
     guid: 636274bd0dc0a6048b20d5fcf963c02b
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game Levels/3 Shooty Guy.unity
     guid: 3387ecd6be7e06e45a7f034be96c60e3
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game Levels/4 Indirect Kills.unity
     guid: a36e2aa793a549a469ad2d5d36a0f989
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/Game Levels/5 Final.unity
     guid: f5d977dc24cba784aa5414ca890aef0f
+  - enabled: 1
+    path: Assets/Scenes/Game Levels/Level_Editor.unity
+    guid: ea7d3087fb7e8ea48ac8f3610350c7e4
   m_configObjects: {}

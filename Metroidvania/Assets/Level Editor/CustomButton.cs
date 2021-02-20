@@ -75,7 +75,7 @@ public class CustomButton : MonoBehaviour, IPointerEnterHandler,
         OnClick?.Invoke();
     }
 
-    static void DeselectCurrent()
+    public static void DeselectCurrent()
     {
         if (currentlySelected != null)
         {

@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityPlacement: {fileID: 4652368362441792875}
+  saveSystemId: shooting_enemy
   enabledOnlyInPlayModeAlive:
   - {fileID: 7253198291097405540}
   - {fileID: 7253198291097405542}
@@ -22,6 +23,7 @@ MonoBehaviour:
   - {fileID: 7253198291097405545}
   enabledOnlyInEditMode:
   - {fileID: 4652368362441792875}
+  - {fileID: 7253198291097405541}
   bodyRenderer: {fileID: 7253198291097405544}
   shootingArmRenderer: {fileID: 7253198292193562287}
   leftFootRenderer: {fileID: 7253198291078414747}

@@ -24,6 +24,8 @@ public class Entities : MonoBehaviour
     public List<EditorEntity> walkingEnemies;
     public List<EditorEntity> checkpoints;
 
+    [SerializeField] CommonEditMode editModeControl;
+
     [System.Serializable]
     public struct EntityInstance { 
     
@@ -57,6 +59,9 @@ public class Entities : MonoBehaviour
             strToEEDict.Add(e.type, editorEntity);
             
         }
+
+        SetCommonActions(player);
+        SetCommonActions(levelExit);
     }
 
     // DEBUG - this should be called in when drag n dropping an entity
@@ -131,11 +136,24 @@ public class Entities : MonoBehaviour
                 return null;
         }
 
-        instance.entityPlacement.SetConstraints(tilemapEditor.lowerLeft, tilemapEditor.upperRight);
-        instance.entityPlacement.OnDropped += entityTrashCan.CheckDestroy;
+        SetCommonActions(instance);
+
+        // entityplacement just like a player, but can also be binned
+        instance.entityPlacement.OnDropped += entityTrashCan.CheckDestroy; 
+
         instance.OnEnterEditMode(); // turn it's brain off immediately
 
         return instance;
+    }
+
+    private void SetCommonActions(EditorEntity instance)
+    {
+        instance.entityPlacement.SetConstraints(tilemapEditor.lowerLeft, tilemapEditor.upperRight);
+        instance.entityPlacement.OnStartedBeingHeld +=
+                () => editModeControl.SwitchToAction(CommonEditMode.EditingActions.Entity_Placement);
+
+        instance.entityPlacement.OnStartedBeingHeld +=
+                () => CustomButton.DeselectCurrent();
     }
 
     public void Destroy(EditorEntity ee)

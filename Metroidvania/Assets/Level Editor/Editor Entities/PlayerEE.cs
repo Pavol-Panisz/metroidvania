@@ -12,6 +12,8 @@ public class PlayerEE : EditorEntity
 
     [SerializeField] private PlayerManager playerManager;
 
+    [SerializeField] private HealthSystem healthSystem;
+
     private Vector3 ogPosition;
     private Quaternion ogRotation;
 
@@ -51,6 +53,8 @@ public class PlayerEE : EditorEntity
         rb.simulated = true;
 
         playerManager.SetRespawnPoint(new Vector2(transform.position.x, transform.position.y));
+
+        healthSystem.FullHealth();
     }
 
     public override void UpdateTransform()

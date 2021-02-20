@@ -31,6 +31,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   entityPlacement: {fileID: -8162847420269002514}
+  saveSystemId: walking_enemy
   enabledOnlyInPlayModeAlive:
   - {fileID: 7619056900833446654}
   - {fileID: 7619056900833446640}

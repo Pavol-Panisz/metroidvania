@@ -15,7 +15,11 @@ public class CommonEditMode : MonoBehaviour
     [Tooltip("The gameobjects which parents all the UI visible only in edit mode")]
     [SerializeField] private GameObject editModeUIParent;
     [SerializeField] CinemachineBrain cinemachineBrain;
-    [SerializeField] Transform playerTransform;
+    [SerializeField] Transform playerTransform; 
+    
+    [Tooltip("Because when it's active, you can also move the camera using the borders")]
+    [SerializeField] BoxFillTool boxFillTool;
+
 
     [Space]
     [Header("Cam movement when mouse close to screen bounds")]
@@ -171,4 +175,5 @@ public class CommonEditMode : MonoBehaviour
                 Camera.main.transform.position.z
         );
     }
+
 }

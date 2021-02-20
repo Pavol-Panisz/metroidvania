@@ -56,4 +56,23 @@ public class LevelExit : MonoBehaviour, IInteractable
         }
     }
 
+    // called by esc menu
+    public void LoadSceneByIndex(int i)
+    {
+        sf.FadeIn();
+
+        if (coroutines == null)
+        {
+            coroutines = FindObjectOfType<Coroutines>();
+        }
+
+        coroutines.StopAllCoroutines();
+
+
+        coroutines.WaitThenExecute(1.1f, () => {
+            SceneManager.LoadScene(i);
+        });
+        
+    }
+
 }

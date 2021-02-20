@@ -15,7 +15,7 @@ public class TilemapEditor : MonoBehaviour
     private Vector3 mousePosLastF;
 
     private Tilemap currentTilemap;
-    private CompositeCollider2D currentCollider;
+    public CompositeCollider2D currentCollider;
 
     [SerializeField] private LevelControl levelControl;
     [SerializeField] private CommonEditMode editModeControl;
@@ -42,10 +42,14 @@ public class TilemapEditor : MonoBehaviour
     public TileBase activeTile;
     [Space]
     public Transform tilePlacementIndicator;
-    private SpriteRenderer tilePlacementIndicatorSprite;
+    public SpriteRenderer tilePlacementIndicatorSprite;
 
     public enum Layers { Foreground, Background, Damage }
     public Layers activeLayer = Layers.Foreground;
+    private Dictionary<Layers, string> layerToEnumStr = new Dictionary<Layers, string>();
+
+    // for this layer, which layers can be edited (for example foreground - foreground & ladder)
+    private Dictionary<Layers, Tilemap[]> associatedInternalLayersDict = new Dictionary<Layers, Tilemap[]>();
 
     [Space]
     [Header("Regarding the layer buttons")]
@@ -53,7 +57,21 @@ public class TilemapEditor : MonoBehaviour
     [SerializeField] private Image backgroundSelectedIndicator;
     [SerializeField] private Image damageSelectedIndicator;
 
+    [Space]
+    [SerializeField] private TileBase ladderTile;
+    [SerializeField] private TileBase lavaTile;
+
     public Action<TileBase, Tilemap, Vector3Int> OnPlacedTile;
+
+    // called after updating the indicator pos in Update()
+    // Just realized that it's useless, since this update method can still
+    // execute after the update method of a tilemaptool. whatever.
+    public Action<Vector3Int> OnUpdatedIndicatorPos;
+    public Action<Layers> OnSwitchedLayerTo;
+
+    [Space]
+    [SerializeField] public Color fadedTilemapColor;
+    private List<Tilemap> tilemapList = new List<Tilemap>();
 
     public class FromInstructionsBuilder
     {
@@ -86,9 +104,24 @@ public class TilemapEditor : MonoBehaviour
                 char inCharmap = charmap.GetCharAt(xxx, currentY, TilemapSerialization.errorChar);
                 if ((inCharmap != chr) && (inCharmap != TilemapSerialization.errorChar)) {
 
-                    TileBase tile = tilemapSerialization.charToTileDict[chr];
+                    Vector3Int pos = (Vector3Int)charmap.CharmapToTilemapCoords(new Vector2Int(xxx, currentY));
 
-                    tilemapEditor.SetTile((Vector3Int)charmap.TilemapToCharmapCoords(new Vector3Int(xxx, currentY, 0)), tile);
+                    if (chr == TilemapSerialization.airChar)
+                    {
+                        tilemapEditor.SetTile(pos, null);
+                    } else
+                    {
+                        try
+                        {
+                            TileBase tile = tilemapSerialization.charToTileDict[chr];
+                            tilemapEditor.SetTile(pos, tile);
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.Log($"couldnt find char {chr}\n{e.Message}");
+                        }
+                    }
+
                 } 
 
                
@@ -100,6 +133,21 @@ public class TilemapEditor : MonoBehaviour
     private void Awake()
     {
         tilePlacementIndicatorSprite = tilePlacementIndicator.GetComponent<SpriteRenderer>();
+
+        tilemapList.Add(foregroundTilemap);
+        tilemapList.Add(backgroundTilemap);
+        tilemapList.Add(damageTilemap);
+        tilemapList.Add(lavaTilemap);
+        tilemapList.Add(ladderTilemap);
+
+        // implemented only after all the damage (mapping in SetActiveLayer) had been done
+        layerToEnumStr.Add(Layers.Background, "Background");
+        layerToEnumStr.Add(Layers.Foreground, "Foreground");
+        layerToEnumStr.Add(Layers.Damage, "Damage");
+
+        associatedInternalLayersDict.Add(Layers.Foreground, new Tilemap[] { foregroundTilemap, ladderTilemap });
+        associatedInternalLayersDict.Add(Layers.Background, new Tilemap[] { backgroundTilemap });
+        associatedInternalLayersDict.Add(Layers.Damage, new Tilemap[] { damageTilemap, lavaTilemap });
     }
 
     private void Start()
@@ -128,43 +176,14 @@ public class TilemapEditor : MonoBehaviour
         tilePos.x = Mathf.Clamp(tilePos.x, lowerLeft.x, upperRight.x);
         tilePos.y = Mathf.Clamp(tilePos.y, lowerLeft.x, upperRight.y);
         tilePlacementIndicator.position = tilePos;
+
+        OnUpdatedIndicatorPos(tilePos);
+
         tilePlacementIndicator.position += new Vector3(0.5f, 0.5f, 0f);
 
-        // placement
-        if (Input.GetKey(KeyCode.Mouse0) && !CommonEditMode.isBeingInhibited)
-        {
-            if (activeTile != null)
-            {
-                SetTile(tilePos, activeTile);
+        EntityPlacement.beingMousedOverAnyThisIteration = false;
 
-                // I realized at this point that all tiles inherit from TileBase. That's why
-                // up until now, I've been "differentiating" between ruleTiles & normal tiles :p
-                OnPlacedTile?.Invoke(activeTile, currentTilemap, tilePos);
-            }
-            else if (activeTile != null)
-            {
-                SetTile(tilePos, activeTile);
-                OnPlacedTile?.Invoke(activeTile, currentTilemap, tilePos);
-            }
-
-
-            if (currentCollider != null) currentCollider.GenerateGeometry();
-        }
-        // destruction
-        if (Input.GetKey(KeyCode.Mouse1) && !CommonEditMode.isBeingInhibited)
-        {
-            
-
-            SetTile(tilePos, null);
-            OnPlacedTile?.Invoke(null, currentTilemap, tilePos);
-            // generated when entering play mode
-            //if (currentCollider != null) currentCollider.GenerateGeometry();
-        }
-
-        // TODO tile placement & special rules when placing lava or ladders
-        
-
-        //mousePosLastF = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePosLastF = mousePos;
     }
 
     // Caled by the 3 layer select buttons
@@ -175,6 +194,7 @@ public class TilemapEditor : MonoBehaviour
             activeLayer = Layers.Foreground;
             currentCollider = foregroundCol;
             currentTilemap = foregroundTilemap;
+            DarkenLayersExcept(ladderTilemap, foregroundTilemap);
 
             foregroundSelectedIndicator.color = new Color(1f, 1f, 1f, 1f);
             backgroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
@@ -185,6 +205,7 @@ public class TilemapEditor : MonoBehaviour
             activeLayer = Layers.Background;
             currentCollider = null;
             currentTilemap = backgroundTilemap;
+            DarkenLayersExcept(backgroundTilemap);
 
             foregroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
             backgroundSelectedIndicator.color = new Color(1f, 1f, 1f, 1f);
@@ -195,6 +216,7 @@ public class TilemapEditor : MonoBehaviour
             activeLayer = Layers.Damage;
             currentCollider = damageCol;
             currentTilemap = damageTilemap;
+            DarkenLayersExcept(damageTilemap, lavaTilemap);
 
             foregroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
             backgroundSelectedIndicator.color = new Color(1f, 1f, 1f, 0f);
@@ -202,7 +224,9 @@ public class TilemapEditor : MonoBehaviour
         } else
         {
             Debug.LogError($"Unknown layer set {str}");
+            return;
         }
+        OnSwitchedLayerTo?.Invoke(activeLayer);
     }
 
     // Called by each tile icon
@@ -223,16 +247,18 @@ public class TilemapEditor : MonoBehaviour
         if (mode == LevelControl.Modes.Edit) 
         {
             isInEditMode = true;
+            DarkenLayersExcept(associatedInternalLayersDict[activeLayer]);
         }
         else if (mode == LevelControl.Modes.Play)
         {
             isInEditMode = false;
 
-        foregroundCol.GenerateGeometry();
-        ladderCol.GenerateGeometry();
-        damageCol.GenerateGeometry();
-        lavaCol.GenerateGeometry();
-}   
+            foregroundCol.GenerateGeometry();
+            ladderCol.GenerateGeometry();
+            damageCol.GenerateGeometry();
+            lavaCol.GenerateGeometry();
+            DarkenLayersExcept(tilemapList.ToArray());
+        }   
     }
 
     private void OnSwitchedEditingAction(CommonEditMode.EditingActions action)
@@ -240,10 +266,19 @@ public class TilemapEditor : MonoBehaviour
         if (action == CommonEditMode.EditingActions.Entity_Placement)
         {
             isEditingTilemap = false;
+            tilePlacementIndicator.position = Vector3.one * 0.5f;
+            DarkenLayersExcept(tilemapList.ToArray());
+
+            // dependency
+            TilemapTool.DeselectCurrent();
+
         }
         else if (action == CommonEditMode.EditingActions.Tile_Placement)
         {
             isEditingTilemap = true;
+            SetActiveLayer(layerToEnumStr[activeLayer]);
+
+            if (TilemapTool.currentlySelected == null) TilemapTool.SelectLastDeselected();
         }
     }
 
@@ -255,8 +290,76 @@ public class TilemapEditor : MonoBehaviour
     /// <summary>
     /// Handles all logic for placing tiles, such as overrides for lava and ladders.
     /// </summary>
-    private void SetTile(Vector3Int tilePos, TileBase tile) 
+    public void SetTile(Vector3Int tilePos, TileBase tile) 
     {
-        currentTilemap.SetTile(tilePos, tile);
+        if (tile == null) // if deleting
+        {
+            currentTilemap.SetTile(tilePos, null);
+            OnPlacedTile?.Invoke(tile, currentTilemap, tilePos);
+
+            if (activeLayer == Layers.Damage && lavaTilemap.GetTile(tilePos) == lavaTile)
+            {
+                lavaTilemap.SetTile(tilePos, null);
+                lavaCol.GenerateGeometry();
+            }
+            else if (activeLayer == Layers.Foreground && ladderTilemap.GetTile(tilePos) == ladderTile)
+            {
+                ladderTilemap.SetTile(tilePos, null);
+                ladderCol.GenerateGeometry(); 
+            }
+        }
+        else // if placing
+        {
+            if (tile == lavaTile && activeLayer == Layers.Damage)
+            {
+                lavaTilemap.SetTile(tilePos, tile);
+                currentTilemap.SetTile(tilePos, null);
+                lavaCol.GenerateGeometry();
+
+            }
+            else if (tile == ladderTile && activeLayer == Layers.Foreground)
+            {
+                ladderTilemap.SetTile(tilePos, tile);
+                currentTilemap.SetTile(tilePos, null);
+                ladderCol.GenerateGeometry();
+            }
+            else
+            {
+                currentTilemap.SetTile(tilePos, tile);
+
+                if (activeLayer == Layers.Damage && lavaTilemap.GetTile(tilePos) == lavaTile)
+                {
+                    lavaTilemap.SetTile(tilePos, null);
+                    lavaCol.GenerateGeometry();
+                }
+                else if (activeLayer == Layers.Foreground && ladderTilemap.GetTile(tilePos) == ladderTile)
+                {
+                    ladderTilemap.SetTile(tilePos, null);
+                    ladderCol.GenerateGeometry();
+                }
+            }
+            OnPlacedTile?.Invoke(tile, currentTilemap, tilePos);
+        }
+    }
+
+    private void DarkenLayersExcept(params Tilemap[] p)
+    {
+        foreach (var t in tilemapList)
+        {
+            foreach (var excepted in p)
+            {
+                t.color = fadedTilemapColor;
+                if (t == excepted)
+                {
+                    t.color = Color.white;
+                    break;
+                }
+            }
+        }
+    }
+
+    public void GenerateCurrentColliderGeometry()
+    {
+        if (currentCollider != null) currentCollider.GenerateGeometry();
     }
 }

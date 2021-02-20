@@ -10,7 +10,10 @@ public class CheckpointLE : MonoBehaviour, IInteractable
     [SerializeField] private SFXPlayer sfx;
     public static int stCurrentPriority;
     public Vector2 respawnPoint;
+
     private PlayerManager plM;
+    private HealthSystem playerHealth;
+
     [SerializeField] private SpriteRenderer sr;
     private bool hasBeenTouched = false;
 
@@ -20,6 +23,7 @@ public class CheckpointLE : MonoBehaviour, IInteractable
     private void Awake()
     {
         plM = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerManager>();
+        playerHealth = plM.gameObject.GetComponent<HealthSystem>();
     }
 
     void Start()
@@ -35,6 +39,7 @@ public class CheckpointLE : MonoBehaviour, IInteractable
         {
             sfx.TryPlayOnce("Ding");
             SetHasBeenTouched(true);
+            playerHealth.FullHealth();
         }
 
         if (priority > stCurrentPriority)

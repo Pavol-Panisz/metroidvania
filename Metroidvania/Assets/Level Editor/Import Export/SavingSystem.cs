@@ -11,7 +11,7 @@ public class SavingSystem : MonoBehaviour
 
     string content = null;
 
-    private string saveFileName = "save.metlvl";
+    private string saveFileName = "level.txt";
     public static string saveFileCommentStr = "#";
 
     void Start()
