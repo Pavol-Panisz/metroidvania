@@ -292,6 +292,9 @@ public class TilemapEditor : MonoBehaviour
     /// </summary>
     public void SetTile(Vector3Int tilePos, TileBase tile) 
     {
+        tilePos.x = Mathf.Clamp(tilePos.x, lowerLeft.x, upperRight.x);
+        tilePos.y = Mathf.Clamp(tilePos.y, lowerLeft.x, upperRight.y);
+
         if (tile == null) // if deleting
         {
             currentTilemap.SetTile(tilePos, null);
