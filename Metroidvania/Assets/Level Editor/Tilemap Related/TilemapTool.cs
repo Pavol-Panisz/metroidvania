@@ -90,9 +90,12 @@ public abstract class TilemapTool : MonoBehaviour, IPointerEnterHandler,
 
     public static void DeselectCurrent() // called when clicking on an entity
     {
-        currentlySelected.selectionImage.color = Color.clear;
-        lastDeselected = currentlySelected;
-        currentlySelected = null;
+        if (currentlySelected)
+        {
+            currentlySelected.selectionImage.color = Color.clear;
+            lastDeselected = currentlySelected;
+            currentlySelected = null;
+        }
     }
 
     public static void SelectLastDeselected() // called when clicking on a tilemap-editing related thing

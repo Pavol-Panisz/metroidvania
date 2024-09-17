@@ -25,6 +25,8 @@ public class EntityPlacement : MonoBehaviour
     // scaling of the transform, which holds the sprite renderer
     Vector2 unscaledSpriteWorldSize;
 
+    private Vector2 normalizedPivot;
+
     public EditorEntity entity;
 
     [Tooltip("The spriteRenderer, over whose sprite a mouse-over will be registered. It should be " 
@@ -43,6 +45,9 @@ public class EntityPlacement : MonoBehaviour
         Sprite spr = mouseOverSpriteRenderer.sprite;
         unscaledSpriteWorldSize = spr.rect.size * (1 / spr.pixelsPerUnit);
 
+        normalizedPivot = spr.pivot / spr.rect.size;
+        //Debug.Log(transform.name + "" + normalizedPivot);
+        Debug.Log(transform.name + " " + normalizedPivot);
     }
 
     private void OnEnable()
@@ -54,6 +59,10 @@ public class EntityPlacement : MonoBehaviour
     private void Update()
     {
         Rect r = CalculateSpriteWorldRect();
+
+        Debug.DrawLine(r.position, r.position + Vector2.right * r.width, Color.red);
+        Debug.DrawLine(r.position, r.position - Vector2.down* r.height, Color.red);
+
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         bool isMousedOver = false;
 
@@ -116,20 +125,28 @@ public class EntityPlacement : MonoBehaviour
     private void OnMouseEnter()
     {
         mousedOverCount++;
+        foreach (var renderer in changeColorRenderers) renderer.color = mouseOverColor;
     }
 
     private void OnMouseExit()
     {
         mousedOverCount--;
+        foreach (var renderer in changeColorRenderers) renderer.color = Color.white;
     }
 
     private Rect CalculateSpriteWorldRect()
+
     {
         // Create the rect that represents the sprite in world space.
         // Don't forget that rects measure their position not in the middle, but the lower left corner
         Vector2 scaledSpriteWorldSize = Vector2.Scale(unscaledSpriteWorldSize, transform.lossyScale);
         Vector2 lowerLeftSpriteWorldCorner = (Vector2)transform.position - (scaledSpriteWorldSize * 0.5f);
-        return new Rect(lowerLeftSpriteWorldCorner, scaledSpriteWorldSize);
+        var rect = new Rect(lowerLeftSpriteWorldCorner, scaledSpriteWorldSize);
+
+        // the rect will be centered at the pivot point, but we want it centered at the center of the sprite
+        rect.position -= (normalizedPivot - Vector2.one * 0.5f )  * scaledSpriteWorldSize;
+
+        return rect;
     }
 
     public void SetConstraints(Vector2Int ll, Vector2Int ur)
